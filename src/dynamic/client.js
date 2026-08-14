@@ -54,9 +54,11 @@ return {
       .bw-input { flex: 1; min-width: 160px; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.14); color: #fff; border-radius: 8px; padding: 8px 10px; font-size: 13px; outline: none; }
       .bw-input:focus { border-color: #fb7299; }
       .bw-site-wrap { display: flex; flex-direction: column; }
-      .bw-site { width: 100%; aspect-ratio: 16 / 9; border: 0; background: #fff; display: block; }
+      .bw-site-zoom { position: relative; width: 100%; aspect-ratio: 16 / 9; overflow: hidden; background: #fff; }
+      .bw-site-zoom iframe { position: absolute; top: 0; left: 0; width: calc(100% / var(--bw-zoom, 1)); height: calc(100% / var(--bw-zoom, 1)); transform: scale(var(--bw-zoom, 1)); transform-origin: 0 0; border: 0; background: #fff; }
       .bw-site-stopped { width: 100%; aspect-ratio: 16 / 9; display: flex; align-items: center; justify-content: center; color: #8b949e; font-size: 13px; background: rgba(0,0,0,.3); }
-      .bw-site-hint { font-size: 11px; color: #8b949e; padding: 8px 12px; }
+      .bw-site-hint { font-size: 11px; color: #8b949e; padding: 8px 12px; display: flex; align-items: center; gap: 10px; }
+      .bw-site-zoomctl { display: flex; align-items: center; gap: 6px; margin-left: auto; }
       .bw-attention { position: absolute; inset: 0; background: rgba(18,20,26,.93); z-index: 5; display: flex; flex-direction: column; gap: 10px; justify-content: center; padding: 16px; backdrop-filter: blur(6px); }
       .bw-attn-text { font-size: 14px; font-weight: 600; color: #ff7b72; }
       .bw-msg { font-size: 12px; color: #c9d1d9; background: rgba(255,255,255,.05); border-radius: 8px; padding: 8px 10px; word-break: break-all; }
@@ -110,11 +112,16 @@ return {
       }
     }
 
+    function clampZoom(z) {
+      return Math.min(1.2, Math.max(0.3, Math.round(z * 100) / 100))
+    }
+
     function BiliWatch(props) {
       const useSessions = props.useSessions
       const [open, setOpen] = React.useState(true)
       const [mode, setMode] = React.useState('site')
       const [siteUrl, setSiteUrl] = React.useState('https://www.bilibili.com/')
+      const [zoom, setZoom] = React.useState(0.5)
       const [tab, setTab] = React.useState('feed')
       const [feed, setFeed] = React.useState(null)
       const [feedError, setFeedError] = React.useState('')
@@ -251,10 +258,19 @@ return {
       if (mode === 'site') {
         const page = attention
           ? el('div', { className: 'bw-site-stopped' }, '⏸ 页面已停止（agent 需要你处理）')
-          : el('iframe', { key: siteUrl, className: 'bw-site', src: siteUrl, allowFullScreen: true, title: 'Bilibili' })
+          : el('div', { className: 'bw-site-zoom', style: { '--bw-zoom': String(zoom) } },
+              el('iframe', { key: siteUrl, className: 'bw-site-frame', src: siteUrl, allowFullScreen: true, title: 'Bilibili' }),
+            )
         content = el('div', { className: 'bw-site-wrap' },
           page,
-          el('div', { className: 'bw-site-hint' }, '在窗口内登录 B站即可使用你的账号（个性化首页 / 弹幕 / 高清 / 搜索）。提醒时页面会停止，继续后回到此页面。'),
+          el('div', { className: 'bw-site-hint' },
+            el('span', null, '在窗口内登录 B站即可使用你的账号（个性化首页 / 弹幕 / 高清 / 搜索）。提醒时页面会停止，继续后回到此页面。'),
+            el('span', { className: 'bw-site-zoomctl' },
+              el('button', { className: 'bw-btn', onClick: () => setZoom(clampZoom(zoom - 0.15)) }, '−'),
+              el('span', { className: 'bw-vmeta' }, Math.round(zoom * 100) + '%'),
+              el('button', { className: 'bw-btn', onClick: () => setZoom(clampZoom(zoom + 0.15)) }, '+'),
+            ),
+          ),
         )
       } else if (tab === 'player' && video) {
         const relItems = related.map((it) =>
