@@ -13,6 +13,7 @@
   "files": [
     "lib",
     "README.md",
+    "README.en.md",
     "LICENSE"
   ],
   "dsh": {

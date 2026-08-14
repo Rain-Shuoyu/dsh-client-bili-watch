@@ -1,40 +1,140 @@
-# DeepSneak（dsh-client-deep-sneak）
+<p align="center">
+  <img src="https://img.shields.io/badge/DeepSneak-v0.10.0-%23fb7299?style=for-the-badge" alt="DeepSneak" />
+</p>
 
-DeepSeek Harness 的摸鱼插件：右下角小窗看 B站，agent 干活时视频自动暂停提醒你，处理完回来**从原位置精确续播**。
+<h1 align="center">🐟 DeepSneak</h1>
 
-## 功能
+<p align="center">
+  <b>让 DeepSeek 干活，你在旁边摸鱼。</b><br/>
+  右下角小窗看 B站 · agent 需要你时自动暂停提醒 · 处理完回来从原位置精确续播
+</p>
 
-- 🏠 **首页推荐**：B站真实首页推荐流（免登录），封面卡片浏览，点卡片即播
-- ▶️ **原生播放器**：支持进度条拖动、倍速；agent 需要你时**原位置暂停**，点「继续看视频」**精确续播**
-- 💬 **弹幕**：原生播放器叠加滚动弹幕（与播放进度同步，可开关）
-- 📝 **评论区**：播放页下方浏览评论，可加载更多
-- 🔗 **相关推荐**：播放页下方横滑换片；底部输入框可粘贴 BV 号直接打开
-- 📊 **摸鱼统计**：标题栏「📊」查看今日 / 本周 / 累计摸鱼时长、今日视频数、近 7 天分布（本地持久化）
-- 🔔 **智能提醒**：agent 完成 / 阻塞 / 请求权限 / 提问时，半透明蒙版提示，一键回到对话
-- 🟢 **状态徽标**：实时显示 agent 状态（工作中 / 空闲 / 需要你）
+<p align="center">
+  <img src="https://img.shields.io/badge/version-0.10.0-blue" alt="version" />
+  <img src="https://img.shields.io/badge/license-MIT-green" alt="license" />
+  <img src="https://img.shields.io/badge/platform-DSH%20Web-blueviolet" alt="platform" />
+  <img src="https://img.shields.io/badge/type-web%20client%20plugin-ff69b4" alt="type" />
+  <img src="https://img.shields.io/badge/摸鱼-专业-brightgreen" alt="摸鱼" />
+</p>
 
-## 安装
+---
+
+## ✨ 功能一览
+
+|  |  |  |
+|---|---|---|
+| 🏠 **首页推荐**<br/>B站真实推荐流，免登录 | ▶️ **原生播放器**<br/>拖动 / 倍速 / 进度可控 | ⏸️ **精确续播**<br/>agent 提醒后原位置继续 |
+| 💬 **弹幕**<br/>滚动弹幕与播放同步 | 📝 **评论区**<br/>播放页下方浏览，加载更多 | 🔗 **相关推荐**<br/>横滑换片不中断 |
+| ☀️/🌙 **双主题**<br/>白天 / 黑夜一键切换 | 📊 **摸鱼统计**<br/>今日 / 本周 / 累计时长 | 🔔 **智能提醒**<br/>完成 / 阻塞 / 权限 / 提问 |
+| 🟢 **状态徽标**<br/>工作中 / 空闲 / 需要你 | 🔎 **BV 直达**<br/>输入 BV 号即播 | 🎯 **零配置**<br/>安装即用，偏好自动保存 |
+
+## 📦 安装
+
+### 环境要求
+
+- DeepSeek Harness (DSH) Web
+- Node.js ≥ 18
+
+### 三步安装
 
 ```bash
 # 1. 在 DSH 部署目录（含 cordis.yml 的 profile，如 ~/.dsh/profiles/web）安装
+cd ~/.dsh/profiles/web
 npm install github:Rain-Shuoyu/dsh-client-deep-sneak
+```
 
-# 2. cordis.patch.yml 追加：
-#    - insert:
-#        - id: dsh-client-bili-watch
-#          name: dsh-client-bili-watch
+```yaml
+# 2. 编辑该目录下的 cordis.patch.yml，追加：
+- insert:
+    - id: dsh-client-deep-sneak
+      name: dsh-client-deep-sneak
+```
 
+```bash
 # 3. 重启
 npx @deepseek-ai/dsh web
 ```
 
-刷新页面后右下角即出现播放器。
+刷新页面，右下角即出现 DeepSneak 小窗。
 
-## 说明
+## 🚀 快速上手
 
-- 免登录画质最高 720p（B站 API 限制）；弹幕/评论经 Host 代理获取
-- 抖音因 `X-Frame-Options: DENY` 无法嵌入，故聚焦 B站
+1. **看视频**：首页推荐流点任意卡片 → 原生播放器自动播放，弹幕同步滚动
+2. **摸鱼**：让 agent 开始干活，一边看一边等
+3. **被打断**：agent 需要你时视频自动暂停 + 半透明蒙版提醒，点「回到对话」去处理
+4. **续播**：点「继续看视频」→ **从原位置精确续播**
+5. **个性化**：☀️/🌙 切换主题，📊 查看今日 / 本周 / 累计摸鱼时长
 
-## License
+## ⚙️ 配置
+
+无需任何配置，安装即用。以下偏好自动保存（localStorage）：
+
+| 偏好 | 入口 |
+|---|---|
+| 主题（白天 / 黑夜） | 标题栏 ☀️ / 🌙 |
+| 弹幕开关 | 播放页「💬 弹幕」 |
+| 评论区开关 | 播放页「📝 评论」 |
+
+## 🛠 工作原理
+
+```
+┌──────────────────────────────────────────────┐
+│   DSH Web 页面 · 右下角 DeepSneak 小窗         │
+│  ┌────────────┐   ┌───────────────────────┐  │
+│  │  首页推荐流  │   │  原生播放器 + 弹幕层    │  │
+│  └─────┬──────┘   └──────────┬────────────┘  │
+│        │ fetch               │ <video>       │
+└────────┼─────────────────────┼───────────────┘
+         ▼                     ▼
+┌──────────────────────────────────────────────┐
+│   Host 半区 · 同源代理路由                     │
+│  /dsh-bili/api     JSON（推荐 / 播放 / 评论）  │
+│  /dsh-bili/dm      弹幕 XML（gzip 解压）       │
+│  /dsh-bili/media   视频流（Range 支持拖动续播） │
+└──────────────────────────────────────────────┘
+```
+
+- **agent 联动**：通过会话快照（`useSessions`）实时感知 agent 状态（权限 / 提问 / 完成 / 阻塞），触发暂停 + 蒙版 + Toast 提醒
+- **精确续播**：提醒时对 `<video>` 执行 `pause()`（元素保持挂载、进度不丢），继续时 `play()` 原位置恢复
+- **摸鱼统计**：真实播放时长累计，本地持久化，仅统计播放中的时间
+
+## ❓ FAQ
+
+**为什么最高只有 720p？**
+B站对未登录 API 的画质限制。需要高清 / 弹幕全功能建议同时使用 B站网页版。
+
+**为什么不做抖音？**
+`www.douyin.com` 返回 `X-Frame-Options: DENY` + CSP 白名单，任何站点都无法 iframe 嵌入；其网页 API 也需签名鉴权，无免登录公开接口。
+
+**弹幕为什么感觉比较简单？**
+为保证「精确续播」，播放器不使用 B站 iframe，而是通过公开弹幕接口自绘轻量弹幕层，因此弹幕样式为极简风格（滚动 / 顶部 / 底部，支持颜色与字号）。
+
+**数据存在哪里？**
+全部本地（localStorage），不上传任何数据；代理请求仅用于拉取 B站公开内容。
+
+## 🗺 路线图
+
+- [x] 首页推荐流（免登录）
+- [x] 原生播放器 + 精确续播
+- [x] 弹幕 / 评论区
+- [x] 白天 / 黑夜主题
+- [x] 摸鱼统计（今日 / 本周 / 累计 / 近 7 天）
+- [ ] 摸鱼目标提醒（超过阈值提醒你该干活了）
+- [ ] 弹幕密度 / 字号 / 速度调节
+- [ ] 观看历史与「上次看到」续播
+
+## 🧑‍💻 开发
+
+```
+├── lib/
+│   ├── index.js      # Host 半区：API / 弹幕 / 视频流代理
+│   └── client.js     # Client bundle（手写源码，无需构建）
+└── src/dynamic/      # 动态插件原型（bili-1）源码归档
+```
+
+- 客户端 bundle 为纯手写 JavaScript（`__ModuleLoader__` 格式），**无需构建步骤**，改完直接提交即可
+- 本地快速体验：在 DSH 会话内以动态插件方式运行原型（见 `src/dynamic/`）
+
+## 📄 License
 
 [MIT](LICENSE)
