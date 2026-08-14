@@ -69,7 +69,7 @@ return {
     function BiliWatch(props) {
       const useSessions = props.useSessions
       const [open, setOpen] = React.useState(true)
-      const [siteUrl, setSiteUrl] = React.useState('https://www.bilibili.com/')
+      const [siteUrl, setSiteUrl] = React.useState('https://www.bilibili.com/v/popular/rank/all')
       const [zoom, setZoom] = React.useState(0.6)
       const [input, setInput] = React.useState('')
       const [attention, setAttention] = React.useState(null)
@@ -142,11 +142,17 @@ return {
       const badgeText = attention ? '⚠ 需要你' : (running ? '● 工作中' : '○ 空闲')
       const badgeCls = attention ? 'bw-badge-warn' : (running ? 'bw-badge-run' : 'bw-badge-idle')
 
-      // ---- 页面（attention 时卸载 iframe 以停止声音）----
+      // ---- 页面（attention 时卸载 iframe 以停止声音；sandbox 禁止弹窗/顶层跳转）----
       const page = attention
         ? el('div', { className: 'bw-site-stopped' }, '⏸ 页面已停止')
         : el('div', { className: 'bw-site-zoom', style: { '--bw-zoom': String(zoom) } },
-            el('iframe', { key: siteUrl, className: 'bw-site-frame', src: siteUrl, title: 'Bilibili' }),
+            el('iframe', {
+              key: siteUrl,
+              className: 'bw-site-frame',
+              src: siteUrl,
+              title: 'Bilibili',
+              sandbox: 'allow-scripts allow-same-origin allow-forms allow-modals allow-downloads',
+            }),
           )
 
       const content = el('div', { className: 'bw-site-wrap' },
