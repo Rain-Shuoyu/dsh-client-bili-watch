@@ -166,8 +166,10 @@ return {
     }
 
     // ---- 摸鱼统计：localStorage 持久化 ----
-    const STORE_KEY = "dsh-bili-watch.stats.v1";
-    const THEME_KEY = "dsh-bili-watch.theme";
+    const STORE_KEY = "deep-sneak.stats.v1";
+    const LEGACY_STORE_KEY = "dsh-bili-watch.stats.v1";
+    const THEME_KEY = "deep-sneak.theme";
+    const LEGACY_THEME_KEY = "dsh-bili-watch.theme";
 
     function dayKey(d) {
       const x = d instanceof Date ? d : new Date(d);
@@ -178,7 +180,12 @@ return {
 
     function loadStats() {
       try {
-        const raw = localStorage.getItem(STORE_KEY);
+        let raw = localStorage.getItem(STORE_KEY);
+        if (!raw) {
+          // 从旧名称迁移历史统计
+          raw = localStorage.getItem(LEGACY_STORE_KEY);
+          if (raw) localStorage.setItem(STORE_KEY, raw);
+        }
         if (raw) {
           const d = JSON.parse(raw);
           if (d && d.daily) return d;
@@ -229,7 +236,12 @@ return {
       const [commentsLoading, setCommentsLoading] = React.useState(false);
       const [theme, setTheme] = React.useState(() => {
         try {
-          return localStorage.getItem(THEME_KEY) === "dark" ? "dark" : "light";
+          let v = localStorage.getItem(THEME_KEY);
+          if (v == null) {
+            v = localStorage.getItem(LEGACY_THEME_KEY);
+            if (v) localStorage.setItem(THEME_KEY, v);
+          }
+          return v === "dark" ? "dark" : "light";
         } catch {
           return "light";
         }
@@ -692,7 +704,7 @@ return {
       }
 
       const header = el("div", { className: "bw-header" },
-        el("div", { className: "bw-title" }, "边看边等 · B站"),
+        el("div", { className: "bw-title" }, "DeepSneak"),
         el("span", { className: "bw-badge " + badgeCls }, badgeText),
         el("button", { className: "bw-btn bw-btn-ghost", onClick: toggleTheme, title: theme === "dark" ? "切换白天模式" : "切换黑夜模式" }, theme === "dark" ? "☀️" : "🌙"),
         el("button", {
@@ -725,7 +737,7 @@ return {
       );
       const pill = el("div", { className: "bw-pill", onClick: () => setOpen(true) },
         el("span", { className: "bw-dot " + badgeCls }),
-        "边看边等 · " + badgeText,
+        "DeepSneak · " + badgeText,
       );
       const toastNode = toast
         ? el("div", { className: "bw-toast", onClick: () => { setOpen(true); setToast(null); } },
@@ -743,7 +755,7 @@ return {
 
 
     slots.inject('shell.overlay', () => slots.register(
-      { name: 'shell.overlay', id: 'bili-watch', order: 100 },
+      { name: 'shell.overlay', id: 'deep-sneak', order: 100 },
       (props) => React.createElement(BiliWatch, props),
     ))
   },

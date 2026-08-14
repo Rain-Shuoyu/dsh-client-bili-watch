@@ -1,4 +1,4 @@
-# 边看边等 · B站悬浮播放器（dsh-client-bili-watch）
+# DeepSneak（dsh-client-deep-sneak）
 
 DeepSeek Harness 的摸鱼插件：右下角小窗看 B站，agent 干活时视频自动暂停提醒你，处理完回来**从原位置精确续播**。
 
@@ -17,7 +17,7 @@ DeepSeek Harness 的摸鱼插件：右下角小窗看 B站，agent 干活时视�
 
 ```bash
 # 1. 在 DSH 部署目录（含 cordis.yml 的 profile，如 ~/.dsh/profiles/web）安装
-npm install github:Rain-Shuoyu/dsh-client-bili-watch
+npm install github:Rain-Shuoyu/dsh-client-deep-sneak
 
 # 2. cordis.patch.yml 追加：
 #    - insert:

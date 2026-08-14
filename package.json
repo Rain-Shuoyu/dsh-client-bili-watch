@@ -1,7 +1,7 @@
 {
-  "name": "dsh-client-bili-watch",
-  "version": "0.9.1",
-  "description": "边看边等：DeepSeek Harness (DSH) 的 B站悬浮播放器。agent 工作时右下角看视频，agent 完成/阻塞/请求权限/提问时自动停止视频并提醒你回到对话。",
+  "name": "dsh-client-deep-sneak",
+  "version": "0.10.0",
+  "description": "DeepSneak：DeepSeek Harness 的摸鱼播放器。右下角小窗看 B站（首页推荐/原生播放器/弹幕/评论/摸鱼统计），agent 工作时自动暂停提醒，处理完从原位置精确续播。",
   "license": "MIT",
   "type": "module",
   "main": "lib/index.js",
