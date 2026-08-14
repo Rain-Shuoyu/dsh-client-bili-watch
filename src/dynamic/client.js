@@ -57,6 +57,18 @@ return {
       .bw-mask-text { font-size: 15px; font-weight: 600; color: #ff7b72; }
       .bw-mask-sub { font-size: 12px; color: #c9d1d9; }
       .bw-row { display: flex; gap: 8px; }
+      .bw-stats { position: absolute; inset: 0; background: rgba(20,22,28,.97); z-index: 4; padding: 16px; display: flex; flex-direction: column; gap: 12px; overflow-y: auto; }
+      .bw-stats-title { font-size: 15px; font-weight: 600; }
+      .bw-stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+      .bw-stats-item { background: rgba(255,255,255,.05); border-radius: 10px; padding: 10px; text-align: center; }
+      .bw-stats-num { font-size: 16px; font-weight: 600; color: #fb7299; }
+      .bw-stats-label { font-size: 11px; color: #8b949e; margin-top: 2px; }
+      .bw-stats-7d { display: flex; flex-direction: column; gap: 6px; }
+      .bw-stats-day { display: flex; align-items: center; gap: 8px; font-size: 11px; color: #a7b0ba; }
+      .bw-stats-daylabel { width: 42px; flex: none; }
+      .bw-stats-barwrap { flex: 1; background: rgba(255,255,255,.06); border-radius: 3px; height: 6px; overflow: hidden; }
+      .bw-stats-bar { height: 6px; border-radius: 3px; background: #fb7299; }
+      .bw-stats-dayval { width: 62px; text-align: right; flex: none; }
       @keyframes bwPop { from { opacity: 0; transform: translateX(-50%) translateY(-8px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
       @keyframes bwBlink { 0%,100% { opacity: 1; } 50% { opacity: .45; } }
     `)
@@ -101,6 +113,37 @@ return {
       }
     }
 
+    // ---- 摸鱼统计：localStorage 持久化 ----
+    const STORE_KEY = 'dsh-bili-watch.stats.v1'
+
+    const dayKey = (d) => {
+      const x = d instanceof Date ? d : new Date(d)
+      return x.getFullYear() + '-' + String(x.getMonth() + 1).padStart(2, '0') + '-' + String(x.getDate()).padStart(2, '0')
+    }
+
+    const loadStats = () => {
+      try {
+        const raw = localStorage.getItem(STORE_KEY)
+        if (raw) {
+          const d = JSON.parse(raw)
+          if (d && d.daily) return d
+        }
+      } catch (e) { /* localStorage 不可用 */ }
+      return { daily: {} }
+    }
+
+    const saveStats = (stats) => {
+      try { localStorage.setItem(STORE_KEY, JSON.stringify(stats)) } catch (e) { /* ignore */ }
+    }
+
+    const fmtMs = (ms) => {
+      const s = Math.max(0, Math.round(ms / 1000))
+      if (s < 60) return s + ' 秒'
+      const m = Math.floor(s / 60)
+      if (m < 60) return m + ' 分钟'
+      return Math.floor(m / 60) + ' 小时 ' + (m % 60) + ' 分'
+    }
+
     const RCMD = 'https://api.bilibili.com/x/web-interface/index/top/rcmd?fresh_type=3&ps=10&fresh_idx='
 
     function BiliWatch(props) {
@@ -116,11 +159,15 @@ return {
       const [input, setInput] = React.useState('')
       const [attention, setAttention] = React.useState(null)
       const [toast, setToast] = React.useState(null)
+      const [statsOpen, setStatsOpen] = React.useState(false)
       const [hostAtt, setHostAtt] = React.useState(null)
 
       const videoRef = React.useRef(null)
       const prevRunning = React.useRef(false)
       const firedKey = React.useRef(null)
+      const statsRef = React.useRef(loadStats())
+      const playingSinceRef = React.useRef(null)
+      const countedSrcRef = React.useRef(null)
 
       const sessions = useSessions((s) => s)
       const currentId = sessions ? sessions.current : undefined
@@ -143,6 +190,38 @@ return {
         if (!toast) return undefined
         return ctx.timeout(() => setToast(null), 8000)
       }, [toast])
+
+      // 累计一段播放时长并持久化（不停止计时）
+      const bankWatch = React.useCallback(() => {
+        const now = Date.now()
+        if (playingSinceRef.current == null) return
+        const ms = now - playingSinceRef.current
+        playingSinceRef.current = now
+        if (ms <= 0) return
+        const k = dayKey(now)
+        const day = statsRef.current.daily[k] || (statsRef.current.daily[k] = { ms: 0, videos: 0 })
+        day.ms += ms
+        saveStats(statsRef.current)
+      }, [])
+
+      // 停止计时并结算（pause/ended/卸载）
+      const stopWatch = React.useCallback(() => {
+        if (playingSinceRef.current == null) return
+        bankWatch()
+        playingSinceRef.current = null
+      }, [bankWatch])
+
+      // 定时落盘 + 页面关闭落盘 + 卸载结算
+      React.useEffect(() => {
+        const flush = () => bankWatch()
+        const id = ctx.interval(flush, 30000)
+        window.addEventListener('beforeunload', flush)
+        return () => {
+          id()
+          window.removeEventListener('beforeunload', flush)
+          stopWatch()
+        }
+      }, [bankWatch, stopWatch])
 
       // 加载首页推荐
       React.useEffect(() => {
@@ -190,6 +269,18 @@ return {
         if (!p) return
         loadVideo(p.bvid, p.page)
       }
+
+      // 视频开始播放：开始计时 + 计数（每个视频只计一次）
+      const handlePlaying = React.useCallback(() => {
+        playingSinceRef.current = Date.now()
+        if (video && countedSrcRef.current !== video.src) {
+          countedSrcRef.current = video.src
+          const k = dayKey(Date.now())
+          const day = statsRef.current.daily[k] || (statsRef.current.daily[k] = { ms: 0, videos: 0 })
+          day.videos += 1
+          saveStats(statsRef.current)
+        }
+      }, [video])
 
       // 推导当前会话的注意力状态
       const wasRunning = prevRunning.current
@@ -250,6 +341,9 @@ return {
             controls: true,
             autoPlay: true,
             playsInline: true,
+            onPlaying: handlePlaying,
+            onPause: stopWatch,
+            onEnded: stopWatch,
           }),
           el('div', { className: 'bw-vtitle' }, video.title),
           el('div', { className: 'bw-vmeta' }, (video.up || '') + ' · ' + video.bvid),
@@ -310,9 +404,75 @@ return {
         )
       }
 
+      // ---- 摸鱼统计 ----
+      let statsOverlay = null
+      if (statsOpen) {
+        const daily = statsRef.current.daily
+        const now = new Date()
+        const today = dayKey(now)
+        const weekStart = new Date(now)
+        weekStart.setDate(now.getDate() - ((now.getDay() + 6) % 7))
+        weekStart.setHours(0, 0, 0, 0)
+        const weekKey = dayKey(weekStart)
+        let todayMs = 0
+        let todayVideos = 0
+        let weekMs = 0
+        let totalMs = 0
+        for (const k of Object.keys(daily)) {
+          const v = daily[k]
+          totalMs += v.ms
+          if (k === today) {
+            todayMs = v.ms
+            todayVideos = v.videos
+          }
+          if (k >= weekKey && k <= today) weekMs += v.ms
+        }
+        const last7 = []
+        for (let i = 6; i >= 0; i--) {
+          const d = new Date(now)
+          d.setDate(now.getDate() - i)
+          const k = dayKey(d)
+          last7.push({ label: k.slice(5), ms: (daily[k] || {}).ms || 0 })
+        }
+        const max7 = Math.max(1, ...last7.map((x) => x.ms))
+        statsOverlay = el('div', { className: 'bw-stats' },
+          el('div', { className: 'bw-stats-title' }, '📊 摸鱼统计'),
+          el('div', { className: 'bw-stats-grid' },
+            el('div', { className: 'bw-stats-item' }, el('div', { className: 'bw-stats-num' }, fmtMs(todayMs)), el('div', { className: 'bw-stats-label' }, '今日摸鱼')),
+            el('div', { className: 'bw-stats-item' }, el('div', { className: 'bw-stats-num' }, String(todayVideos)), el('div', { className: 'bw-stats-label' }, '今日视频')),
+            el('div', { className: 'bw-stats-item' }, el('div', { className: 'bw-stats-num' }, fmtMs(weekMs)), el('div', { className: 'bw-stats-label' }, '本周摸鱼')),
+            el('div', { className: 'bw-stats-item' }, el('div', { className: 'bw-stats-num' }, fmtMs(totalMs)), el('div', { className: 'bw-stats-label' }, '累计摸鱼')),
+          ),
+          el('div', { className: 'bw-stats-title' }, '近 7 天'),
+          el('div', { className: 'bw-stats-7d' },
+            last7.map((x) =>
+              el('div', { key: x.label, className: 'bw-stats-day' },
+                el('span', { className: 'bw-stats-daylabel' }, x.label),
+                el('span', { className: 'bw-stats-barwrap' },
+                  el('span', { className: 'bw-stats-bar', style: { display: 'block', width: Math.max(2, (x.ms / max7) * 100) + '%' } }),
+                ),
+                el('span', { className: 'bw-stats-dayval' }, x.ms >= 60000 ? Math.round(x.ms / 60000) + ' 分' : '—'),
+              ),
+            ),
+          ),
+          el('div', { className: 'bw-row' },
+            el('button', { className: 'bw-btn bw-btn-primary', onClick: () => setStatsOpen(false) }, '返回'),
+          ),
+        )
+      }
+
       const header = el('div', { className: 'bw-header' },
         el('div', { className: 'bw-title' }, '边看边等 · B站'),
         el('span', { className: 'bw-badge ' + badgeCls }, badgeText),
+        el('button', {
+          className: 'bw-btn bw-btn-ghost',
+          onClick: () => {
+            bankWatch()
+            const v = videoRef.current
+            if (v && !v.paused) v.pause()
+            setStatsOpen(true)
+          },
+        }, '📊'),
         el('button', { className: 'bw-btn bw-btn-ghost', onClick: goBack }, '—'),
       )
 
@@ -329,7 +489,7 @@ return {
 
       const panel = el('div', { className: 'bw-panel' + (open ? '' : ' bw-panel-hidden') },
         header,
-        el('div', { className: 'bw-wrap' }, content, mask),
+        el('div', { className: 'bw-wrap' }, content, mask, statsOverlay),
         bottom,
       )
       const pill = el('div', { className: 'bw-pill', onClick: () => setOpen(true) },
