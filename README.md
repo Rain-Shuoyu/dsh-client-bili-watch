@@ -7,11 +7,11 @@
 
 ## 功能
 
-- 🏠 **首页推荐流**：小窗渲染 **B站真实首页推荐**（rcmd 接口，免登录、支持"换一批"），卡片式浏览
-- ▶️ **点击卡片 → 获取 BV → 小窗跳转播放**：点推荐卡片（或输入 BV 号），iframe 跳到该视频页在小窗内播放（可登录账号看弹幕/高清）
-- 🔒 **sandbox 硬性防跳转**：iframe 以沙箱运行（禁弹窗/禁顶层跳转），**绝不可能跳出小窗**
-- 📐 **横屏 16:9 + 内容缩放**：视频页默认 **60%** 缩放（−/+/百分比可调，30%–120%）
-- 🔔 **半透明蒙版提醒（可近似续播）**：agent 需要你时（请求权限 / 提问 / 方案确认 / 完成 / 阻塞 / 出错），页面停止（静音）并盖上半透明蒙版提示；点「继续浏览」会用 `?t=` **从之前断开的位置附近继续播放**（按播放时长估算，跨域 iframe 无法精确到帧）
+- 🏠 **首页推荐流**：小窗渲染 **B站真实首页推荐**（rcmd 接口，免登录、支持"换一批"），卡片式浏览，封面完整显示
+- ▶️ **原生播放器**：点卡片（或输入 BV 号）→ **原生 `<video>` 播放**（经 Host 流代理，支持进度条拖动/倍速）
+- ⏸️ **精确暂停续播**：agent 需要你时视频**原位置暂停**（元素保持挂载、进度不丢），点「继续看视频」**从暂停处精确续播**
+- 🔗 **相关推荐**：播放页下方横滑列表，随时换片
+- 🔔 **半透明蒙版提醒**：agent 需要你时（请求权限 / 提问 / 方案确认 / 完成 / 阻塞 / 出错）盖上蒙版提示，回到对话去处理
 - 🟢 **状态徽标**：标题栏与最小化 pill 实时显示 agent 状态（🟢 工作中 / ⚪ 空闲 / 🔴 需要你）
 
 ## 安装
@@ -48,40 +48,40 @@ npx @deepseek-ai/dsh web
 
 ## 使用
 
-1. 打开后默认显示**首页推荐**——点任意卡片，或粘贴 **BV 号/链接** 到下方输入框，小窗内跳到视频页播放
-2. 视频页内可**登录自己的 B站账号**（登录态保存在小窗内），看弹幕/高清
-3. 让 agent 开始干活，一边看一边等
-4. agent 需要你时：**页面停止（静音）+ 顶部 Toast + 小窗上半透明蒙版**
+1. 打开后默认显示**首页推荐**——点任意卡片，或粘贴 **BV 号/链接** 到下方输入框，原生播放器开始播放（支持拖动/倍速）
+2. 让 agent 开始干活，一边看一边等
+3. agent 需要你时：**视频原位置暂停 + 顶部 Toast + 小窗上半透明蒙版**
    - **回到对话**：收起小窗去处理 agent 的请求
-   - **继续浏览**：重新加载之前打开的页面
+   - **继续看视频**：从暂停处**精确续播**
 
 ## 工作原理
 
 - 注册在 DSH 客户端 `shell.overlay` 插槽（全屏浮动层，additive id）
-- **Host 半区**（`lib/index.js`）注册同源 JSON 代理 `GET /dsh-bili/api?u=<url>`：浏览器无法直连 B站 API（跨域 403），由 Host 服务端请求；为 rcmd 首页推荐接口注入随机 `buvid3` cookie（免登录）
-- **Client 半区**渲染 B站真实首页推荐流（`x/web-interface/index/top/rcmd`），点击卡片拿到该视频的 **BV 号** → 设置 iframe 的 src 为对应视频页 → 在小窗内播放
-- 视频页 iframe 以 `sandbox="allow-scripts allow-same-origin allow-forms allow-modals allow-downloads"` 运行：保留登录/播放/表单，**禁止弹窗与顶层跳转**；内容缩放通过「布局宽度 ÷ 缩放比 + `transform: scale`」实现
+- **Host 半区**（`lib/index.js`）注册两个同源代理路由（浏览器无法直连 B站：API 跨域 403、视频 CDN 校验 Referer）：
+  - `GET /dsh-bili/api?u=<url>` — JSON 代理（首页推荐 rcmd / 视频信息 / 播放地址 / 相关推荐），注入随机 `buvid3`（免登录）
+  - `GET /dsh-bili/media?u=<url>` — 视频流代理，**转发 Range**（原生播放器可拖动/续播），只放行 B站 CDN 域名
+- **Client 半区**渲染首页推荐流，点击卡片 → 取 BV → `view` + `playurl` 接口拿播放地址 → **原生 `<video>`** 播放
+- 封面图加 `referrerPolicy="no-referrer"`：B站图片 CDN 对带外部 Referer 的请求返回 403（反盗链），去掉 Referer 即可正常加载
 - 通过 `useSessions` 快照实时跟踪当前会话：`pendingInteraction`（approval / question / plan-review）+ `running` 转换（完成 / 阻塞 / 出错 → 任务结束）
-- 跨域 iframe 无法程序化暂停，因此提醒时**卸载 iframe**（彻底静音），「继续浏览」重新加载之前打开的页面
+- 提醒时对 `<video>` 执行 `pause()`（元素保持挂载 → 进度精确保留），「继续看视频」执行 `play()` 精确续播
 - 动态插件原型（`src/dynamic/`）另含 Host 半区：`goal/changed` 阻塞 + `agent/error` 出错的精确检测（经 harness RPC）
 
 ## 目录结构
 
 ```
 ├── lib/
-│   ├── index.js      # Host 半区：/dsh-bili/api JSON 代理（buvid3）
+│   ├── index.js      # Host 半区：/dsh-bili/api JSON 代理（buvid3）+ /dsh-bili/media 流代理（Range）
 │   └── client.js     # Client bundle（__ModuleLoader__ 格式，手写源码，无需构建）
-├── src/dynamic/      # 动态 Cordis 插件原型（bili-1/pkg-9）源码归档（含阻塞/出错精确检测）
+├── src/dynamic/      # 动态 Cordis 插件原型（bili-1/pkg-12）源码归档（含阻塞/出错精确检测）
 ├── package.json      # dsh.client 声明：platform=web, inject=@deepseek-ai/dsh-client-runtime
 └── README.md
 ```
 
 ## 已知限制
 
-- 跨域 iframe 无法暂停/续播到帧：提醒时页面停止（静音），插件按播放时长估算位置，「继续浏览」用 `?t=` 从近似位置继续；若在播放器内手动暂停/拖动过，估算位置会有偏差
-- 视频页内的相关推荐/搜索若使用「新标签打开」会被 sandbox 拦截（点了不跳转，也无效果）——请用「← 首页」返回推荐流或下方输入框打开视频
+- 原生播放器为未登录画质（最高 720p），无弹幕（B站对免登录 API 的限制）
+- 播放器模式下相关推荐/搜索等使用 B站网页的能力不可用——换片请用「← 首页」返回推荐流或下方输入框
 - 抖音等站点因 `X-Frame-Options: DENY` 无法嵌入（见 FAQ）
-- 视频页缩放后文字较小（60% 默认），可按需用 −/+ 调节
 
 ## FAQ：为什么不做抖音？
 
