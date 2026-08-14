@@ -107,6 +107,27 @@ return {
           return { code: -1, message: String(e && e.message || e) }
         }
       })
+
+      // ---- 弹幕 XML 代理（host.call('bili-danmaku', {url})，--compressed 解压 gzip）----
+      harness.handle('bili-danmaku', async (args) => {
+        const url = args && args.url ? String(args.url) : ''
+        if (!url) return { code: -1, message: 'missing url' }
+        try {
+          const h = sub.spawn({
+            argv: [CURL, '-sS', '--compressed', '--max-time', '20', '--http1.1', '-H', 'User-Agent: ' + UA, '-H', 'Referer: https://www.bilibili.com/', '-H', 'Cookie: ' + genBuvid(), url],
+            cwd: '/',
+            stdio: { stdin: 'ignore', stdout: 'pipe', stderr: 'ignore' },
+            graceMs: 5000,
+          })
+          let out = ''
+          for await (const chunk of h.stdout) out += chunk.toString('utf8')
+          const outcome = await h.done
+          if (outcome.exitCode !== 0) return { code: -1, message: 'upstream exit ' + outcome.exitCode }
+          return { code: 0, xml: out }
+        } catch (e) {
+          return { code: -1, message: String(e && e.message || e) }
+        }
+      })
     }
 
     // ---- 视频流代理（<video src=/dsh-bili/media?u=...>，支持 Range 续传/拖动）----
