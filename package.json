@@ -1,6 +1,6 @@
 {
   "name": "dsh-client-deep-sneak",
-  "version": "0.11.0",
+  "version": "0.12.0",
   "description": "DeepSneak：DeepSeek Harness 的摸鱼播放器。右下角小窗看 B站（首页推荐/原生播放器/弹幕/评论/摸鱼统计），agent 工作时自动暂停提醒，处理完从原位置精确续播。",
   "license": "MIT",
   "type": "module",

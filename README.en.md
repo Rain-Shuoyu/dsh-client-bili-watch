@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://img.shields.io/badge/DeepSneak-v0.11.0-%23fb7299?style=for-the-badge" alt="DeepSneak" />
+  <img src="https://img.shields.io/badge/DeepSneak-v0.12.0-%23fb7299?style=for-the-badge" alt="DeepSneak" />
 </p>
 
 <h1 align="center">🐟 DeepSneak</h1>
@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-0.11.0-blue" alt="version" />
+  <img src="https://img.shields.io/badge/version-0.12.0-blue" alt="version" />
   <img src="https://img.shields.io/badge/license-MIT-green" alt="license" />
   <img src="https://img.shields.io/badge/platform-DSH%20Web-blueviolet" alt="platform" />
   <img src="https://img.shields.io/badge/type-web%20client%20plugin-ff69b4" alt="type" />
