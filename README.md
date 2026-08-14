@@ -1,26 +1,29 @@
 # 边看边等 · B站悬浮播放器（dsh-client-bili-watch）
 
 > DeepSeek Harness (DSH) 的摸鱼神器：让 agent 干活，你在右下角看 B站。
-> agent **完成 / 阻塞 / 请求权限 / 提问** 时，自动停止视频并提醒你回到对话。
+> agent **完成 / 阻塞 / 请求权限 / 提问** 时，自动暂停视频并提醒你回到对话；点「继续看视频」**从暂停位置续播**。
 
 ![plugin](https://img.shields.io/badge/DSH-web%20client%20plugin-blue) ![license](https://img.shields.io/badge/license-MIT-green)
 
 ## 功能
 
-- 🎬 **悬浮播放窗**：右下角浮动 B站播放器（官方 `player.bilibili.com` 嵌入，高清 + 弹幕 + 自动播放），支持输入 **BV 号** 或 **完整链接**（含 `?p=2` 分P）
-- 🔔 **智能暂停提醒**：当前会话的 agent 需要你时，自动停止视频并在顶部弹出提醒：
+- 🏠 **首页推荐**：像正常网页一样浏览 B站综合热门榜（封面/标题/UP主/播放量），点击即播，无需记 BV 号
+- ▶️ **原生播放器**：支持播放/暂停/进度条拖动/倍速；暂停后续播**从原位置继续**（不再是重头播放）
+- 🔗 **相关推荐**：播放页下方展示当前视频的相关推荐，随时换片
+- 🔎 **BV 号快速打开**：底部输入框仍支持粘贴 BV 号或链接（含 `?p=2` 分P）
+- 🔔 **智能暂停提醒**：当前会话的 agent 需要你时，自动暂停视频并在顶部弹出提醒：
   | 场景 | 提示 |
   | --- | --- |
   | 请求权限（approval） | `agent 正在请求权限审批` |
   | 提问（question / ask_user_question） | `agent 正在向你提问` |
   | 方案确认（plan-review） | `agent 正在等待方案确认` |
-  | 完成 / 阻塞 / 出错 | `agent 任务已结束（完成 / 阻塞 / 出错）` |
-- 🖥 **回到对话**：提醒时一键收起播放窗回到聊天界面，也可点「继续看视频」重新打开播放器
-- 🟢 **状态徽标**：窗口标题栏与最小化 pill 实时显示 agent 状态（🟢 工作中 / ⚪ 空闲 / 🔴 需要你）
+  | 完成 / 阻塞 / 出错 | `agent 任务已结束…`（静态版）/ 精确区分 `任务阻塞`、`执行出错`（动态版，见下） |
+- 🖥 **回到对话**：提醒时一键收起播放窗（视频保持暂停、进度保留），随时点开继续
+- 🟢 **状态徽标**：标题栏与最小化 pill 实时显示 agent 状态（🟢 工作中 / ⚪ 空闲 / 🔴 需要你）
 
 ## 安装
 
-> 插件是**纯浏览器端**的 DSH client plugin（`dsh.client` 声明），零依赖、无需构建。
+> 插件 = **Host 半区（B站 API/流代理）+ Client 半区（UI）**。零 npm 依赖、无需构建。
 
 ### 1. 安装到 DSH 部署目录
 
@@ -52,37 +55,41 @@ npx @deepseek-ai/dsh web
 
 ## 使用
 
-1. 在输入框粘贴 **BV 号**（如 `BV1GJ411x7h7`）或 **视频链接**（如 `https://www.bilibili.com/video/BV1GJ411x7h7?p=2`），回车或点「打开」
+1. 打开后自动加载**首页推荐**，点任意视频卡片即可播放；或粘贴 **BV 号/链接** 到下方输入框回车打开
 2. 让 agent 开始干活，一边看视频一边等
-3. agent 需要你时：视频停止 + 顶部 Toast 提醒 + 面板变红
-   - **回到对话**：收起播放窗，处理 agent 的请求
-   - **继续看视频**：重新打开播放器（从开头播放）
-4. 点标题栏「—」可最小化为右下角 pill，随时点开
+3. agent 需要你时：**视频自动暂停（进度保留）** + 顶部 Toast 提醒 + 面板变红
+   - **回到对话**：收起播放窗去处理 agent 的请求（回来点开，进度还在）
+   - **继续看视频**：从暂停位置继续播放
 
 ## 工作原理
 
-- 注册在 DSH 客户端 `shell.overlay` 插槽（全屏浮动层，additive id，不遮挡其它 UI）
-- 通过插槽标准 prop `useSessions` 实时订阅当前会话快照：
-  - `pendingInteraction`（`approval` / `question` / `plan-review`）→ 精确区分「请求权限 / 提问 / 方案确认」
-  - `running` 由 `true → false` 转换 → 「任务已结束」（完成 / 阻塞 / 出错时 agent 都会停止）
-- **暂停策略**：B站跨域 iframe 没有公开的 postMessage 控制协议，无法程序化暂停，因此提醒时直接卸载 iframe（彻底停止音视频），重新打开后从头播放
+- **Host 半区**（`lib/index.js`）注册两个同源代理路由（浏览器无法直连 B站：API 对跨域返回 403，CDN 校验 Referer/UA）：
+  - `GET /dsh-bili/api?u=<url>` — 代理 `api.bilibili.com` 的 JSON 接口（首页推荐、视频信息、播放地址、相关推荐）
+  - `GET /dsh-bili/stream?u=<url>` — 代理 B站 CDN 视频流，**转发 Range 请求**（播放器可拖动/续播），只放行 B站 CDN 域名
+- **Client 半区**（`lib/client.js`）注册在 `shell.overlay` 插槽：
+  - 原生 `<video>` 播放代理流 → **暂停/续播/拖动完全可控**
+  - 通过 `useSessions` 快照实时跟踪当前会话：`pendingInteraction`（approval/question/plan-review）+ `running` 转换（完成/阻塞/出错 → 任务结束）
+  - 面板收起时**仅 CSS 隐藏**、video 元素不卸载 → 播放进度始终保留
 
 ## 目录结构
 
 ```
 ├── lib/
-│   ├── index.js      # Host loader 入口（浏览器专属插件，无 Host 行为）
-│   └── client.js     # 客户端 bundle（__ModuleLoader__ 格式，手写源码，无需构建）
-├── src/dynamic/      # 早期动态 Cordis 插件原型（bili-1）源码归档，含 Host 半区的阻塞/出错精确检测
+│   ├── index.js      # Host 半区：/dsh-bili/api + /dsh-bili/stream 代理路由
+│   └── client.js     # Client bundle（__ModuleLoader__ 格式，手写源码，无需构建）
+├── src/dynamic/      # 动态 Cordis 插件原型（bili-1/pkg-2）源码归档：
+│   │                 #   Host 半区含 goal/changed 阻塞 + agent/error 出错的精确检测
+│   │                 #   （动态版经 harness RPC 通信，静态版走 webServer 路由）
 ├── package.json      # dsh.client 声明：platform=web, inject=@deepseek-ai/dsh-client-runtime
 └── README.md
 ```
 
-## 限制与路线图
+## 已知限制
 
-- [ ] 重新打开视频后从头播放（跨域 iframe 无法读取进度；若 B站开放播放器 API 可改进）
-- [ ] 精确区分「阻塞」与「出错」原因（当前合并为「任务已结束」；`src/dynamic/` 中的 Host 半区方案可在后续版本通过 host remote 服务接入）
-- [ ] 部分 UP 主禁止嵌入的视频无法播放（显示 B站错误页，属正常现象）
+- 无登录画质上限 720p（B站对未登录用户的限制；需更高画质请自行登录后在网页端看）
+- 无弹幕（原生播放器不带弹幕层）
+- 搜索接口需要 B站登录态，故 v2 以「首页推荐 + 相关推荐」代替搜索
+- 部分 UP 主禁止嵌入/限制外链的视频可能无法获取播放地址（B站侧限制，属正常现象）
 
 ## License
 
