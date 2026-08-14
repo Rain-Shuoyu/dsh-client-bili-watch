@@ -104,7 +104,7 @@ return {
       return Math.min(1.2, Math.max(0.3, Math.round(z * 100) / 100))
     }
 
-    const RCMD = 'https://api.bilibili.com/x/web-interface/index/top/rcmd?fresh_type=3&ps=30&fresh_idx='
+    const RCMD = 'https://api.bilibili.com/x/web-interface/index/top/rcmd?fresh_type=3&ps=10&fresh_idx='
 
     function BiliWatch(props) {
       const useSessions = props.useSessions
