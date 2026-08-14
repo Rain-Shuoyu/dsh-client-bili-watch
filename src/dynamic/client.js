@@ -123,6 +123,9 @@ return {
 
       const prevRunning = React.useRef(false)
       const firedKey = React.useRef(null)
+      const videoBaseRef = React.useRef(null) // 视频页基础 URL（不带 ?t=）
+      const videoOpenAtRef = React.useRef(null) // 打开视频的时刻（估算播放时长）
+      const resumeAtRef = React.useRef(null) // 提醒时记录的位置（秒）
 
       const sessions = useSessions((s) => s)
       const currentId = sessions ? sessions.current : undefined
@@ -163,7 +166,11 @@ return {
       }, [freshIdx, reload])
 
       const openVideo = (bvid) => {
-        setVideoUrl('https://www.bilibili.com/video/' + bvid + '/')
+        const base = 'https://www.bilibili.com/video/' + bvid + '/'
+        videoBaseRef.current = base
+        videoOpenAtRef.current = Date.now()
+        resumeAtRef.current = null
+        setVideoUrl(base)
         setView('video')
       }
 
@@ -194,6 +201,10 @@ return {
         firedKey.current = key
         setAttention({ reason: derived.reason, message: derived.message, source: derived.source })
         setToast({ reason: derived.reason })
+        // 记录当前播放位置（近似：按打开至今的时长估算）
+        if (view === 'video' && videoBaseRef.current && videoOpenAtRef.current) {
+          resumeAtRef.current = Math.max(0, Math.floor((Date.now() - videoOpenAtRef.current) / 1000))
+        }
       }, [key])
 
       const dismissAttention = () => {
@@ -201,6 +212,15 @@ return {
           host.call('ack-attention', { sessionId: currentId }).catch(() => {})
         }
         setAttention(null)
+        // 在视频页：用 ?t= 从之前断开的位置附近继续
+        if (view === 'video' && videoBaseRef.current && resumeAtRef.current != null) {
+          const t = resumeAtRef.current
+          resumeAtRef.current = null
+          if (t > 2) {
+            videoOpenAtRef.current = Date.now()
+            setVideoUrl(videoBaseRef.current + '?t=' + t)
+          }
+        }
       }
       const goBack = () => setOpen(false)
 
@@ -213,7 +233,7 @@ return {
       if (view === 'video' && videoUrl) {
         // attention 时卸载 iframe 停止声音；sandbox 禁止弹窗/顶层跳转
         const page = attention
-          ? el('div', { className: 'bw-site-stopped' }, '⏸ 页面已停止')
+          ? el('div', { className: 'bw-site-stopped' }, '⏸ 页面已停止 · 已记住播放位置')
           : el('div', { className: 'bw-site-zoom', style: { '--bw-zoom': String(zoom) } },
               el('iframe', {
                 key: videoUrl,
