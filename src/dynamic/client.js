@@ -30,16 +30,24 @@ return {
       .bw-wrap { position: relative; }
       .bw-body { padding: 12px; display: flex; flex-direction: column; gap: 10px; max-height: 66vh; overflow-y: auto; }
       .bw-tabrow { display: flex; align-items: center; gap: 8px; }
-      .bw-tab { font-size: 13px; padding: 4px 12px; border-radius: 999px; background: var(--bw-soft); color: var(--bw-text2); border: 1px solid var(--bw-bd); }
+      .bw-tab { font-size: 13px; padding: 4px 12px; border-radius: 999px; background: var(--bw-soft); color: var(--bw-text2); border: 1px solid var(--bw-bd); cursor: pointer; transition: background .15s, color .15s; }
       .bw-tab-active { background: var(--bw-pink); border-color: var(--bw-pink); color: var(--bw-accent); }
       .bw-refresh { margin-left: auto; font-size: 12px; padding: 4px 10px; }
       .bw-refresh + .bw-refresh { margin-left: 0; }
+      .bw-spacer { margin-left: auto; display: flex; gap: 8px; }
       .bw-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-      .bw-card { background: var(--bw-soft); border: 1px solid var(--bw-bd-soft); border-radius: 10px; overflow: hidden; cursor: pointer; text-align: left; padding: 0; color: var(--bw-text); display: block; }
-      .bw-card:hover { border-color: var(--bw-pink); }
+      .bw-card { background: var(--bw-soft); border: 1px solid var(--bw-bd-soft); border-radius: 10px; overflow: hidden; cursor: pointer; text-align: left; padding: 0; color: var(--bw-text); display: block; transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease; }
+      .bw-card:hover { border-color: var(--bw-pink); transform: translateY(-2px); box-shadow: 0 8px 18px var(--bw-panel-shadow); }
+      .bw-card-picwrap { position: relative; }
       .bw-card-pic { width: 100%; aspect-ratio: 16/9; object-fit: cover; display: block; background: #000; }
+      .bw-card-dur { position: absolute; right: 5px; bottom: 5px; background: rgba(0,0,0,.72); color: #fff; font-size: 10px; line-height: 1; padding: 3px 5px; border-radius: 4px; font-weight: 600; }
       .bw-card-title { font-size: 12px; line-height: 1.35; padding: 6px 8px 2px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-height: 34px; }
       .bw-card-meta { font-size: 11px; color: var(--bw-text3); padding: 0 8px 8px; }
+      .bw-search { display: flex; gap: 8px; }
+      .bw-search .bw-input { flex: 1; min-width: 0; }
+      .bw-pager { display: flex; align-items: center; gap: 10px; justify-content: center; }
+      .bw-pager-info { font-size: 12px; color: var(--bw-text3); }
+      .bw-tab:disabled { opacity: .5; cursor: default; }
       .bw-loading { color: var(--bw-text3); font-size: 13px; text-align: center; padding: 24px 0; }
       .bw-error { color: var(--bw-err); font-size: 12px; padding: 12px; background: var(--bw-err-bg); border-radius: 8px; }
       .bw-player-wrap { position: relative; }
@@ -109,6 +117,11 @@ return {
       return host.call('bili-danmaku', { url: String(url) })
     }
 
+    /** wbi 签名搜索（host 端签名 + 代理，返回 B站原始 JSON）。 */
+    async function biliSearch(kw, page) {
+      return host.call('bili-search', { kw: String(kw), page: Number(page) || 1 })
+    }
+
     function https(u) {
       return u && typeof u === "string" && u.indexOf("http://") === 0 ? "https://" + u.slice(7) : u;
     }
@@ -122,6 +135,19 @@ return {
       const d = new Date(ts * 1000);
       const pad = (n) => String(n).padStart(2, "0");
       return pad(d.getMonth() + 1) + "-" + pad(d.getDate()) + " " + pad(d.getHours()) + ":" + pad(d.getMinutes());
+    }
+
+    /** 时长角标：秒数 -> "m:ss"（搜索接口直接给字符串则原样保留）。 */
+    function fmtDur(sec) {
+      if (sec == null || sec === "") return null;
+      if (typeof sec === "string") return sec;
+      const s = Math.max(0, Math.floor(Number(sec)));
+      const h = Math.floor(s / 3600);
+      const m = Math.floor((s % 3600) / 60);
+      const x = s % 60;
+      const mm = String(m).padStart(2, "0");
+      const ss = String(x).padStart(2, "0");
+      return h > 0 ? h + ":" + mm + ":" + ss : m + ":" + ss;
     }
 
     function parseBili(input) {
@@ -139,6 +165,21 @@ return {
         pic: https(it.pic),
         up: it.owner && it.owner.name,
         view: it.stat && it.stat.view,
+        danmaku: it.stat && it.stat.danmaku,
+        duration: fmtDur(it.duration),
+      };
+    }
+
+    /** 搜索结果字段与首页推荐不同：title 带 <em> 高亮标签、author/play/video_review。 */
+    function normalizeSearchItem(it) {
+      return {
+        bvid: it.bvid,
+        title: String(it.title || "").replace(/<[^>]+>/g, ""),
+        pic: https(it.pic),
+        up: it.author,
+        view: it.play,
+        danmaku: it.video_review,
+        duration: fmtDur(it.duration),
       };
     }
 
@@ -226,6 +267,13 @@ return {
       const [freshIdx, setFreshIdx] = React.useState(1);
       const [reload, setReload] = React.useState(0);
       const [input, setInput] = React.useState("");
+      const [tab, setTab] = React.useState("home"); // 'home' | 'search'
+      const [searchInput, setSearchInput] = React.useState("");
+      const [searchKw, setSearchKw] = React.useState("");
+      const [searchResults, setSearchResults] = React.useState(null); // null=加载中
+      const [searchPage, setSearchPage] = React.useState(1);
+      const [searchTotal, setSearchTotal] = React.useState(0);
+      const [searching, setSearching] = React.useState(false);
       const [attention, setAttention] = React.useState(null);
       const [toast, setToast] = React.useState(null);
       const [statsOpen, setStatsOpen] = React.useState(false);
@@ -417,6 +465,36 @@ return {
         loadVideo(p.bvid, p.page);
       };
 
+      // 搜索：切到搜索 tab 并拉取结果（过滤空 bvid）
+      const doSearch = React.useCallback(async (kw, page) => {
+        const k = String(kw || "").trim();
+        if (!k) return;
+        setSearchKw(k);
+        setSearchPage(page);
+        setTab("search");
+        setSearching(true);
+        setSearchResults(null);
+        try {
+          const res = await biliSearch(k, page);
+          const list = res && res.code === 0 && res.data && res.data.result;
+          if (Array.isArray(list)) {
+            setSearchResults(list.map(normalizeSearchItem).filter((it) => it.bvid));
+            setSearchTotal(Number((res.data && res.data.numResults) || 0));
+          } else {
+            setSearchResults([]);
+            setSearchTotal(0);
+          }
+        } catch {
+          setSearchResults([]);
+          setSearchTotal(0);
+        }
+        setSearching(false);
+      }, []);
+
+      const submitSearch = () => {
+        if (String(searchInput || "").trim()) doSearch(searchInput, 1);
+      };
+
       // 弹幕开关
       const toggleDm = () => {
         setDmOn((o) => {
@@ -598,8 +676,33 @@ return {
           relItems.length ? el("div", { className: "bw-related" }, relItems) : null,
         );
       } else {
+        // ---- 首页推荐 / 搜索 feed view ----
+        const renderCard = (it) =>
+          el("button", { key: it.bvid, className: "bw-card", onClick: () => loadVideo(it.bvid, 1) },
+            el("div", { className: "bw-card-picwrap" },
+              el("img", { className: "bw-card-pic", src: it.pic, loading: "lazy", referrerPolicy: "no-referrer" }),
+              it.duration ? el("span", { className: "bw-card-dur" }, it.duration) : null,
+            ),
+            el("div", { className: "bw-card-title" }, it.title),
+            el("div", { className: "bw-card-meta" },
+              (it.up || "未知UP") +
+              (it.view ? " · " + fmtCount(it.view) + "播放" : "") +
+              (it.danmaku ? " · " + fmtCount(it.danmaku) + "弹幕" : ""),
+            ),
+          );
+
         let grid;
-        if (feedError) {
+        if (tab === "search") {
+          if (searching && !searchResults) {
+            grid = el("div", { className: "bw-loading" }, "正在搜索「" + searchKw + "」…");
+          } else if (!searchKw) {
+            grid = el("div", { className: "bw-loading" }, "输入关键词，搜索 B站视频");
+          } else if (!searchResults || !searchResults.length) {
+            grid = el("div", { className: "bw-error" }, "没有找到「" + searchKw + "」相关视频");
+          } else {
+            grid = el("div", { className: "bw-grid" }, searchResults.map(renderCard));
+          }
+        } else if (feedError) {
           grid = el("div", { className: "bw-error" }, feedError,
             el("button", { className: "bw-btn", onClick: () => setReload((r) => r + 1) }, "重试"),
           );
@@ -608,23 +711,41 @@ return {
         } else if (!feed.length) {
           grid = el("div", { className: "bw-loading" }, "暂无推荐");
         } else {
-          grid = el("div", { className: "bw-grid" },
-            feed.map((it) =>
-              el("button", { key: it.bvid, className: "bw-card", onClick: () => loadVideo(it.bvid, 1) },
-                el("img", { className: "bw-card-pic", src: it.pic, loading: "lazy", referrerPolicy: "no-referrer" }),
-                el("div", { className: "bw-card-title" }, it.title),
-                el("div", { className: "bw-card-meta" }, (it.up || "") + (it.view ? " · " + fmtCount(it.view) + "播放" : "")),
-              ),
-            ),
-          );
+          grid = el("div", { className: "bw-grid" }, feed.map(renderCard));
         }
+
+        const pager =
+          tab === "search" && searchResults && searchResults.length
+            ? el("div", { className: "bw-pager" },
+                el("button", { className: "bw-btn", disabled: searchPage <= 1 || searching, onClick: () => doSearch(searchKw, searchPage - 1) }, "← 上一页"),
+                el("span", { className: "bw-pager-info" }, "第 " + searchPage + " 页 · 共 " + fmtCount(searchTotal) + " 条"),
+                el("button", { className: "bw-btn", disabled: searchPage * 20 >= searchTotal || searching, onClick: () => doSearch(searchKw, searchPage + 1) }, "下一页 →"),
+              )
+            : null;
+
         content = el("div", { className: "bw-body" },
+          el("div", { className: "bw-search" },
+            el("input", {
+              className: "bw-input",
+              placeholder: "搜索 B站视频，回车搜索",
+              value: searchInput,
+              onChange: (e) => setSearchInput(e.target.value),
+              onKeyDown: (e) => { if (e.key === "Enter") submitSearch(); },
+            }),
+            el("button", { className: "bw-btn bw-btn-primary", onClick: submitSearch, disabled: !String(searchInput || "").trim() }, "搜索"),
+          ),
           el("div", { className: "bw-tabrow" },
-            el("span", { className: "bw-tab bw-tab-active" }, "🏠 首页推荐"),
-            el("button", { className: "bw-btn bw-refresh", onClick: () => setFreshIdx((i) => i + 1) }, "换一批"),
-            el("button", { className: "bw-btn bw-refresh", onClick: () => setReload((r) => r + 1) }, "刷新"),
+            el("button", { className: "bw-tab" + (tab === "home" ? " bw-tab-active" : ""), onClick: () => setTab("home") }, "🏠 首页推荐"),
+            el("button", { className: "bw-tab" + (tab === "search" ? " bw-tab-active" : ""), onClick: () => setTab("search") }, "🔍 " + (searchKw || "搜索")),
+            tab === "search"
+              ? el("button", { className: "bw-btn bw-refresh", onClick: submitSearch, disabled: searching }, "重搜")
+              : el("span", { className: "bw-spacer" },
+                  el("button", { className: "bw-btn bw-refresh", onClick: () => setFreshIdx((i) => i + 1) }, "换一批"),
+                  el("button", { className: "bw-btn bw-refresh", onClick: () => setReload((r) => r + 1) }, "刷新"),
+                ),
           ),
           grid,
+          pager,
         );
       }
 

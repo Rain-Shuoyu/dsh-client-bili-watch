@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://img.shields.io/badge/DeepSneak-v0.10.0-%23fb7299?style=for-the-badge" alt="DeepSneak" />
+  <img src="https://img.shields.io/badge/DeepSneak-v0.11.0-%23fb7299?style=for-the-badge" alt="DeepSneak" />
 </p>
 
 <h1 align="center">🐟 DeepSneak</h1>
@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-0.10.0-blue" alt="version" />
+  <img src="https://img.shields.io/badge/version-0.11.0-blue" alt="version" />
   <img src="https://img.shields.io/badge/license-MIT-green" alt="license" />
   <img src="https://img.shields.io/badge/platform-DSH%20Web-blueviolet" alt="platform" />
   <img src="https://img.shields.io/badge/type-web%20client%20plugin-ff69b4" alt="type" />
@@ -25,7 +25,7 @@
 | 🏠 **Home feed**<br/>Real Bilibili recommendations, no login | ▶️ **Native player**<br/>Seek / speed control | ⏸️ **Exact resume**<br/>Continue from the exact position |
 | 💬 **Danmaku**<br/>Bullet comments synced to playback | 📝 **Comments**<br/>Browse comments under the player | 🔗 **Related videos**<br/>Swipe to switch without stopping |
 | ☀️/🌙 **Light & dark themes**<br/>One-click switch | 📊 **Slack stats**<br/>Today / week / total watch time | 🔔 **Smart alerts**<br/>approval / question / done / blocked |
-| 🟢 **Status badge**<br/>working / idle / needs you | 🔎 **BV direct open**<br/>Paste a BV id to play | 🎯 **Zero config**<br/>Install and go |
+| 🟢 **Status badge**<br/>working / idle / needs you | 🔎 **Video search**<br/>Search by keyword, paginated | 🎯 **Zero config**<br/>Install and go |
 
 ## 📦 Install
 

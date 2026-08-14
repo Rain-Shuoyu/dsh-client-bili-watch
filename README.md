@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://img.shields.io/badge/DeepSneak-v0.10.0-%23fb7299?style=for-the-badge" alt="DeepSneak" />
+  <img src="https://img.shields.io/badge/DeepSneak-v0.11.0-%23fb7299?style=for-the-badge" alt="DeepSneak" />
 </p>
 
 <h1 align="center">🐟 DeepSneak</h1>
@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-0.10.0-blue" alt="version" />
+  <img src="https://img.shields.io/badge/version-0.11.0-blue" alt="version" />
   <img src="https://img.shields.io/badge/license-MIT-green" alt="license" />
   <img src="https://img.shields.io/badge/platform-DSH%20Web-blueviolet" alt="platform" />
   <img src="https://img.shields.io/badge/type-web%20client%20plugin-ff69b4" alt="type" />
@@ -26,7 +26,7 @@
 | 🏠 **首页推荐**<br/>B站真实推荐流，免登录 | ▶️ **原生播放器**<br/>拖动 / 倍速 / 进度可控 | ⏸️ **精确续播**<br/>agent 提醒后原位置继续 |
 | 💬 **弹幕**<br/>滚动弹幕与播放同步 | 📝 **评论区**<br/>播放页下方浏览，加载更多 | 🔗 **相关推荐**<br/>横滑换片不中断 |
 | ☀️/🌙 **双主题**<br/>白天 / 黑夜一键切换 | 📊 **摸鱼统计**<br/>今日 / 本周 / 累计时长 | 🔔 **智能提醒**<br/>完成 / 阻塞 / 权限 / 提问 |
-| 🟢 **状态徽标**<br/>工作中 / 空闲 / 需要你 | 🔎 **BV 直达**<br/>输入 BV 号即播 | 🎯 **零配置**<br/>安装即用，偏好自动保存 |
+| 🟢 **状态徽标**<br/>工作中 / 空闲 / 需要你 | 🔎 **视频搜索**<br/>关键词搜全网，分页浏览 | 🎯 **零配置**<br/>安装即用，偏好自动保存 |
 
 ## 📦 安装
 
@@ -60,10 +60,11 @@ npx @deepseek-ai/dsh web
 ## 🚀 快速上手
 
 1. **看视频**：首页推荐流点任意卡片 → 原生播放器自动播放，弹幕同步滚动
-2. **摸鱼**：让 agent 开始干活，一边看一边等
-3. **被打断**：agent 需要你时视频自动暂停 + 半透明蒙版提醒，点「回到对话」去处理
-4. **续播**：点「继续看视频」→ **从原位置精确续播**
-5. **个性化**：☀️/🌙 切换主题，📊 查看今日 / 本周 / 累计摸鱼时长
+2. **搜视频**：看板顶部搜索框输入关键词（或点「🔍 搜索」tab），结果卡片带时长 / 播放 / 弹幕数，支持翻页
+3. **摸鱼**：让 agent 开始干活，一边看一边等
+4. **被打断**：agent 需要你时视频自动暂停 + 半透明蒙版提醒，点「回到对话」去处理
+5. **续播**：点「继续看视频」→ **从原位置精确续播**
+6. **个性化**：☀️/🌙 切换主题，📊 查看今日 / 本周 / 累计摸鱼时长
 
 ## ⚙️ 配置
 
