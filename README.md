@@ -1,28 +1,22 @@
 # 边看边等 · B站悬浮播放器（dsh-client-bili-watch）
 
-> DeepSeek Harness (DSH) 的摸鱼神器：让 agent 干活，你在右下角看 B站。
-> agent **完成 / 阻塞 / 请求权限 / 提问** 时，自动暂停/停止视频并提醒你回到对话。
+> DeepSeek Harness (DSH) 的摸鱼神器：让 agent 干活，你在右下角的**小窗**里逛 B站。
+> agent **完成 / 阻塞 / 请求权限 / 提问** 时，页面停止并在小窗上盖一层**半透明蒙版**提醒你回到对话。
 
 ![plugin](https://img.shields.io/badge/DSH-web%20client%20plugin-blue) ![license](https://img.shields.io/badge/license-MIT-green)
 
 ## 功能
 
-- 🌐 **网页模式（默认）**：内嵌完整的 `www.bilibili.com` 网页——**在窗口内登录自己的 B站账号**，用你的个性化首页、搜索、弹幕、高画质，就像在浏览器里逛 B站
-- 🎬 **播放器模式**：原生播放器（首页推荐 + 相关推荐），暂停后点「继续看视频」**从原位置续播**
-- 🔎 **BV 号快速打开**：底部输入框粘贴 BV 号或链接（含 `?p=2` 分P），网页模式跳到对应视频页、播放器模式直接原生播放
-- 🔔 **智能暂停提醒**：当前会话的 agent 需要你时，自动暂停/停止媒体并在顶部弹出提醒：
-  | 场景 | 提示 |
-  | --- | --- |
-  | 请求权限（approval） | `agent 正在请求权限审批` |
-  | 提问（question / ask_user_question） | `agent 正在向你提问` |
-  | 方案确认（plan-review） | `agent 正在等待方案确认` |
-  | 完成 / 阻塞 / 出错 | `agent 任务已结束…`（静态版）/ 精确区分 `任务阻塞`、`执行出错`（动态版，见下） |
-- 🖥 **回到对话**：提醒时一键收起播放窗，随时点开继续
+- 🌐 **内嵌完整 B站网页**：右下角小窗直接嵌入 `www.bilibili.com`，**在窗内登录自己的账号**，用个性化首页、搜索、弹幕、高画质
+- 📐 **横屏 16:9 + 内容缩放**：页面内容默认 **60%** 缩放（−/+/百分比可调，30%–120%），整页完整显示
+- 🔒 **全程在小窗中完成**：浏览/搜索/看视频都不离开小窗；已禁用全屏，播放器不会跳出小窗
+- 🔎 **BV 号快速打开**：底部输入框粘贴 BV 号或链接，小窗内直接跳到对应视频页
+- 🔔 **半透明蒙版提醒**：agent 需要你时（请求权限 / 提问 / 方案确认 / 完成 / 阻塞 / 出错），页面停止（静音）并盖上半透明蒙版提示，点「回到对话」去处理，点「继续浏览」回到页面
 - 🟢 **状态徽标**：标题栏与最小化 pill 实时显示 agent 状态（🟢 工作中 / ⚪ 空闲 / 🔴 需要你）
 
 ## 安装
 
-> 插件 = **Host 半区（B站 API/流代理）+ Client 半区（UI）**。零 npm 依赖、无需构建。
+> 纯浏览器端 client plugin，**零 npm 依赖、零 Host 行为、无需构建**。
 
 ### 1. 安装到 DSH 部署目录
 
@@ -50,46 +44,41 @@ npm install github:Rain-Shuoyu/dsh-client-bili-watch
 npx @deepseek-ai/dsh web
 ```
 
-刷新页面后，右下角即出现「边看边等 · B站」面板（默认网页模式）。
+刷新页面后，右下角即出现「边看边等 · B站」小窗。
 
 ## 使用
 
-1. **网页模式（默认）**：面板内就是 B站网页——直接搜索/点视频/看弹幕；首次使用请**在窗口内登录**你的 B站账号（登录态保存在这个窗口内）
-2. **播放器模式**：点标题栏「🎬 播放器」切换——首页推荐列表点卡片即播，暂停后从原位置续播
+1. 打开后就是 B站网页——首次使用请**在小窗内登录**你的 B站账号（登录态保存在小窗内）
+2. 浏览 / 搜索 / 点视频，一切都在小窗内完成；点播放器的全屏不会生效（已禁用，保证不跳出小窗）
 3. 让 agent 开始干活，一边看一边等
-4. agent 需要你时：**媒体自动暂停/停止** + 顶部 Toast 提醒 + 面板变红
-   - **回到对话**：收起面板去处理 agent 的请求
-   - **继续看视频**：播放器模式从暂停位置续播；网页模式回到之前打开的页面
+4. agent 需要你时：**页面停止（静音）+ 顶部 Toast + 小窗上半透明蒙版**
+   - **回到对话**：收起小窗去处理 agent 的请求
+   - **继续浏览**：重新加载之前打开的页面
 
 ## 工作原理
 
-- **网页模式**：直接 iframe 嵌入 `www.bilibili.com`（B站未设置 `X-Frame-Options`，允许嵌入）。跨域 iframe **无法程序化暂停**，因此提醒时卸载 iframe（停止声音），「继续看」重新加载之前打开的页面；登录态在窗内独立保存
-- **Host 半区**（`lib/index.js`）注册两个同源代理路由（供播放器模式使用；浏览器无法直连 B站——API 对跨域返回 403，CDN 校验 Referer/UA）：
-  - `GET /dsh-bili/api?u=<url>` — 代理 `api.bilibili.com` 的 JSON 接口（首页推荐、视频信息、播放地址、相关推荐）
-  - `GET /dsh-bili/media?u=<url>` — 代理 B站 CDN 视频流，**转发 Range 请求**（播放器可拖动/续播），只放行 B站 CDN 域名
-- **Client 半区**（`lib/client.js`）注册在 `shell.overlay` 插槽：
-  - 通过 `useSessions` 快照实时跟踪当前会话：`pendingInteraction`（approval/question/plan-review）+ `running` 转换（完成/阻塞/出错 → 任务结束）
-  - 面板收起时**仅 CSS 隐藏**、video/iframe 元素不卸载 → 播放器模式进度始终保留
+- 注册在 DSH 客户端 `shell.overlay` 插槽（全屏浮动层，additive id）
+- iframe 嵌入 `www.bilibili.com`（B站未设置 `X-Frame-Options`）；内容缩放通过「布局宽度 ÷ 缩放比 + `transform: scale`」实现，页面在完整桌面宽度下布局后缩进小窗
+- 通过 `useSessions` 快照实时跟踪当前会话：`pendingInteraction`（approval / question / plan-review）+ `running` 转换（完成 / 阻塞 / 出错 → 任务结束）
+- 跨域 iframe 无法程序化暂停，因此提醒时**卸载 iframe**（彻底静音），「继续浏览」重新加载之前打开的页面
+- 动态插件原型（`src/dynamic/`）另含 Host 半区：`goal/changed` 阻塞 + `agent/error` 出错的精确检测（经 harness RPC）
 
 ## 目录结构
 
 ```
 ├── lib/
-│   ├── index.js      # Host 半区：/dsh-bili/api + /dsh-bili/media 代理路由
+│   ├── index.js      # Host loader 入口（浏览器专属插件，无 Host 行为）
 │   └── client.js     # Client bundle（__ModuleLoader__ 格式，手写源码，无需构建）
-├── src/dynamic/      # 动态 Cordis 插件原型（bili-1/pkg-4）源码归档：
-│   │                 #   Host 半区含 goal/changed 阻塞 + agent/error 出错的精确检测
-│   │                 #   （动态版经 harness RPC 通信，静态版走 webServer 路由）
+├── src/dynamic/      # 动态 Cordis 插件原型（bili-1/pkg-7）源码归档（含阻塞/出错精确检测）
 ├── package.json      # dsh.client 声明：platform=web, inject=@deepseek-ai/dsh-client-runtime
 └── README.md
 ```
 
 ## 已知限制
 
-- **网页模式**：跨域 iframe 无法暂停/续播，提醒时页面被停止，「继续看」回到之前打开的页面（视频从头播放）；登录态独立于浏览器主窗口保存
-- **播放器模式**：无登录画质上限 720p、无弹幕（B站对未登录 API 的限制）
-- 部分 UP 主限制外链的视频在播放器模式可能无法获取播放地址（网页模式不受影响）
-- 网页模式默认将页面内容缩放至 50%（带 −/+/百分比调节，30%–120%），以横屏 16:9 完整显示整页；窗口越窄内容缩放显示
+- 跨域 iframe 无法暂停/续播：提醒时页面停止，「继续浏览」回到之前打开的页面（视频从头播放）
+- 已禁用全屏（保证全程小窗内完成）；登录态在小窗内独立保存
+- 页面内容缩放后文字较小（60% 默认），可按需用 −/+ 调节
 
 ## License
 
