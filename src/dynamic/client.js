@@ -66,6 +66,10 @@ return {
       .bw-mask { position: absolute; inset: 0; background: var(--bw-mask); z-index: 5; display: flex; flex-direction: column; gap: 10px; justify-content: center; align-items: center; padding: 16px; text-align: center; backdrop-filter: blur(2px); }
       .bw-mask-text { font-size: 15px; font-weight: 600; color: #ff7b72; }
       .bw-mask-sub { font-size: 12px; color: #c9d1d9; }
+      .bw-mask .bw-btn { background: rgba(255,255,255,.16); color: #ffffff; border: 1px solid rgba(255,255,255,.28); }
+      .bw-mask .bw-btn:hover { background: rgba(255,255,255,.26); }
+      .bw-mask .bw-btn-primary { background: var(--bw-pink); border-color: var(--bw-pink); color: #ffffff; }
+      .bw-mask .bw-btn-primary:hover { background: #ff8aa8; }
       .bw-row { display: flex; gap: 8px; }
       .bw-stats { position: absolute; inset: 0; background: var(--bw-panel); z-index: 4; padding: 16px; display: flex; flex-direction: column; gap: 12px; overflow-y: auto; }
       .bw-stats-title { font-size: 15px; font-weight: 600; }
