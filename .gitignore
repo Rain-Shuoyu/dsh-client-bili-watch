@@ -1,0 +1,14 @@
+# macOS
+.DS_Store
+
+# Node
+node_modules/
+*.log
+
+# 编辑器
+.vscode/
+.idea/
+
+# 构建产物
+dist/
+build/
