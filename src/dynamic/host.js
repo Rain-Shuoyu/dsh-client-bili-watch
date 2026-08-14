@@ -103,11 +103,12 @@ return {
       })
     }
 
-    // ---- 视频流代理（<video src=/dsh-bili/stream?u=...>，支持 Range 续传/拖动）----
+    // ---- 视频流代理（<video src=/dsh-bili/media?u=...>，支持 Range 续传/拖动）----
+    // 注意：必须用 ctx.effect 包住 register，否则路由在插件更新/停止时泄漏
     if (webServer !== undefined && sub !== undefined) {
-      webServer.register({
+      ctx.effect(() => webServer.register({
         kind: 'prefix',
-        path: '/dsh-bili/stream',
+        path: '/dsh-bili/media',
         handler: async (req, res) => {
           let h = null
           try {
@@ -155,7 +156,7 @@ return {
             try { if (!res.writableEnded) { res.writeHead(502); res.end('stream error') } } catch (e2) {}
           }
         },
-      })
+      }), 'bili-watch: media route')
     }
   },
 }

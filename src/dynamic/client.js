@@ -13,10 +13,11 @@ return {
       .bw-dot.bw-badge-run { background: #3fb950; box-shadow: 0 0 6px #3fb950; }
       .bw-dot.bw-badge-idle { background: #8b949e; }
       .bw-dot.bw-badge-warn { background: #f85149; box-shadow: 0 0 8px #f85149; animation: bwBlink 1s infinite; }
-      .bw-panel { position: fixed; right: 18px; bottom: 18px; width: 420px; pointer-events: auto; background: rgba(24,26,32,.97); color: #fff; border: 1px solid rgba(255,255,255,.14); border-radius: 14px; box-shadow: 0 16px 48px rgba(0,0,0,.55); z-index: 10001; overflow: hidden; backdrop-filter: blur(10px); display: flex; flex-direction: column; }
+      .bw-panel { position: fixed; right: 18px; bottom: 18px; width: 430px; pointer-events: auto; background: rgba(24,26,32,.97); color: #fff; border: 1px solid rgba(255,255,255,.14); border-radius: 14px; box-shadow: 0 16px 48px rgba(0,0,0,.55); z-index: 10001; overflow: hidden; backdrop-filter: blur(10px); display: flex; flex-direction: column; }
       .bw-panel-hidden { display: none; }
       .bw-header { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-bottom: 1px solid rgba(255,255,255,.08); }
-      .bw-title { font-weight: 600; font-size: 14px; flex: 1; }
+      .bw-title { font-weight: 600; font-size: 14px; flex: 1; white-space: nowrap; }
+      .bw-modes { display: flex; gap: 6px; }
       .bw-badge { font-size: 12px; padding: 2px 8px; border-radius: 999px; }
       .bw-badge-run { background: rgba(63,185,80,.18); color: #56d364; }
       .bw-badge-idle { background: rgba(139,148,158,.18); color: #a7b0ba; }
@@ -49,8 +50,12 @@ return {
       .bw-loading { color: #8b949e; font-size: 13px; text-align: center; padding: 24px 0; }
       .bw-error { color: #ff7b72; font-size: 12px; padding: 12px; background: rgba(248,81,73,.08); border-radius: 8px; }
       .bw-open { display: flex; gap: 8px; align-items: center; padding: 10px 12px; border-top: 1px solid rgba(255,255,255,.08); }
-      .bw-input { flex: 1; min-width: 180px; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.14); color: #fff; border-radius: 8px; padding: 8px 10px; font-size: 13px; outline: none; }
+      .bw-input { flex: 1; min-width: 160px; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.14); color: #fff; border-radius: 8px; padding: 8px 10px; font-size: 13px; outline: none; }
       .bw-input:focus { border-color: #fb7299; }
+      .bw-site-wrap { display: flex; flex-direction: column; }
+      .bw-site { width: 100%; height: min(540px, 66vh); border: 0; background: #fff; }
+      .bw-site-stopped { width: 100%; height: min(540px, 66vh); display: flex; align-items: center; justify-content: center; color: #8b949e; font-size: 13px; background: rgba(0,0,0,.3); }
+      .bw-site-hint { font-size: 11px; color: #8b949e; padding: 8px 12px; }
       .bw-attention { position: absolute; inset: 0; background: rgba(18,20,26,.93); z-index: 5; display: flex; flex-direction: column; gap: 10px; justify-content: center; padding: 16px; backdrop-filter: blur(6px); }
       .bw-attn-text { font-size: 14px; font-weight: 600; color: #ff7b72; }
       .bw-msg { font-size: 12px; color: #c9d1d9; background: rgba(255,255,255,.05); border-radius: 8px; padding: 8px 10px; word-break: break-all; }
@@ -107,6 +112,8 @@ return {
     function BiliWatch(props) {
       const useSessions = props.useSessions
       const [open, setOpen] = React.useState(true)
+      const [mode, setMode] = React.useState('site')
+      const [siteUrl, setSiteUrl] = React.useState('https://www.bilibili.com/')
       const [tab, setTab] = React.useState('feed')
       const [feed, setFeed] = React.useState(null)
       const [feedError, setFeedError] = React.useState('')
@@ -143,7 +150,7 @@ return {
         return ctx.timeout(() => setToast(null), 8000)
       }, [toast])
 
-      // 加载首页推荐
+      // 加载首页推荐（播放器模式）
       const loadFeed = React.useCallback(() => {
         let alive = true
         setFeed(null)
@@ -175,7 +182,7 @@ return {
             title: d.title,
             pic: https(d.pic),
             up: d.owner && d.owner.name,
-            src: '/dsh-bili/stream?u=' + encodeURIComponent(du.url),
+            src: '/dsh-bili/media?u=' + encodeURIComponent(du.url),
           })
           setTab('player')
           setAttention(null)
@@ -189,7 +196,11 @@ return {
       const openVideo = () => {
         const p = parseBili(input)
         if (!p) return
-        loadVideo(p.bvid, p.page)
+        if (mode === 'site') {
+          setSiteUrl('https://www.bilibili.com/video/' + p.bvid + (p.page > 1 ? '?p=' + p.page : ''))
+        } else {
+          loadVideo(p.bvid, p.page)
+        }
       }
 
       // 推导当前会话的注意力状态
@@ -236,7 +247,15 @@ return {
 
       // ---- body content ----
       let content
-      if (tab === 'player' && video) {
+      if (mode === 'site') {
+        const page = attention
+          ? el('div', { className: 'bw-site-stopped' }, '⏸ 页面已停止（agent 需要你处理）')
+          : el('iframe', { key: siteUrl, className: 'bw-site', src: siteUrl, allowFullScreen: true, title: 'Bilibili' })
+        content = el('div', { className: 'bw-site-wrap' },
+          page,
+          el('div', { className: 'bw-site-hint' }, '在窗口内登录 B站即可使用你的账号（个性化首页 / 弹幕 / 高清 / 搜索）。提醒时页面会停止，继续后回到此页面。'),
+        )
+      } else if (tab === 'player' && video) {
         const relItems = related.map((it) =>
           el('button', { key: it.bvid, className: 'bw-rel', onClick: () => loadVideo(it.bvid, 1) },
             el('img', { className: 'bw-rel-pic', src: it.pic, loading: 'lazy' }),
@@ -296,10 +315,16 @@ return {
       if (attention) {
         const text = REASON_TEXT[attention.reason] || 'agent 需要你的注意'
         const msg = attention.message ? el('div', { className: 'bw-msg' }, String(attention.message)) : null
-        const stopped = video ? el('div', { className: 'bw-stopped' },
-          el('div', { className: 'bw-stopped-title' }, '⏸ 视频已暂停'),
-          el('div', { className: 'bw-stopped-hint' }, '已记住播放进度，点「继续看视频」从当前位置续播'),
-        ) : null
+        const stopped = (mode === 'site' || video)
+          ? el('div', { className: 'bw-stopped' },
+              el('div', { className: 'bw-stopped-title' }, '⏸ 已暂停 / 已停止'),
+              el('div', { className: 'bw-stopped-hint' },
+                mode === 'site'
+                  ? '页面已停止播放声音；继续后回到之前打开的页面'
+                  : '已记住播放进度，点「继续看视频」从当前位置续播',
+              ),
+            )
+          : null
         overlay = el('div', { className: 'bw-attention' },
           el('div', { className: 'bw-attn-text' }, '🔔 ' + text),
           msg,
@@ -313,6 +338,10 @@ return {
 
       const header = el('div', { className: 'bw-header' },
         el('div', { className: 'bw-title' }, '边看边等 · B站'),
+        el('div', { className: 'bw-modes' },
+          el('button', { className: 'bw-tab ' + (mode === 'site' ? 'bw-tab-active' : ''), onClick: () => setMode('site') }, '🌐 网页'),
+          el('button', { className: 'bw-tab ' + (mode === 'player' ? 'bw-tab-active' : ''), onClick: () => setMode('player') }, '🎬 播放器'),
+        ),
         el('span', { className: 'bw-badge ' + badgeCls }, badgeText),
         el('button', { className: 'bw-btn bw-btn-ghost', onClick: goBack }, '—'),
       )
@@ -326,6 +355,9 @@ return {
           onKeyDown: (e) => { if (e.key === 'Enter') openVideo() },
         }),
         el('button', { className: 'bw-btn bw-btn-primary', onClick: openVideo, disabled: !parseBili(input) }, '打开'),
+        mode === 'site'
+          ? el('button', { className: 'bw-btn', onClick: () => setSiteUrl('https://www.bilibili.com/') }, '首页')
+          : null,
       )
 
       const panel = el('div', { className: open ? 'bw-panel' : 'bw-panel bw-panel-hidden' },
