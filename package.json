@@ -5,13 +5,23 @@
   "license": "MIT",
   "type": "module",
   "main": "lib/index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Rain-Shuoyu/dsh-client-deep-sneak.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Rain-Shuoyu/dsh-client-deep-sneak/issues"
+  },
+  "homepage": "https://github.com/Rain-Shuoyu/dsh-client-deep-sneak",
   "exports": {
     ".": "./lib/index.js",
     "./client": "./lib/client.js",
+    "./cordis.patch.yml": "./cordis.patch.yml",
     "./package.json": "./package.json"
   },
   "files": [
     "lib",
+    "cordis.patch.yml",
     "README.md",
     "README.en.md",
     "LICENSE"
@@ -22,11 +32,15 @@
       "inject": [
         "@deepseek-ai/dsh-client-runtime"
       ]
+    },
+    "bundle": {
+      "patch": "./cordis.patch.yml"
     }
   },
   "keywords": [
     "deepseek",
     "dsh",
+    "dsh-plugin",
     "harness",
     "bilibili",
     "b站",
