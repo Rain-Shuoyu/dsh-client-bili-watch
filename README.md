@@ -15,6 +15,7 @@
   <img src="https://img.shields.io/badge/platform-DSH%20Web-blueviolet" alt="platform" />
   <img src="https://img.shields.io/badge/type-web%20client%20plugin-ff69b4" alt="type" />
   <img src="https://img.shields.io/badge/摸鱼-专业-brightgreen" alt="摸鱼" />
+  <a href="https://awesome-dsh-plugin.com"><img src="https://awesome-dsh-plugin.com/badge.svg" alt="Awesome DSH Plugin" /></a>
 </p>
 
 ---
@@ -35,18 +36,27 @@
 - DeepSeek Harness (DSH) Web
 - Node.js ≥ 18
 
-### 三步安装
+### 一键安装（推荐）
+
+```bash
+# 在 DSH 部署目录（含 cordis.yml 的 profile，如 ~/.dsh/profiles/web）执行
+dsh plugin --profile web add dsh-client-deep-sneak
+```
+
+或安装 [dsh-market](https://github.com/dsh-market/dsh-market)，在设置 → 插件市场里搜索 **DeepSneak** 一键安装。
+
+### 手动安装
 
 ```bash
 # 1. 在 DSH 部署目录（含 cordis.yml 的 profile，如 ~/.dsh/profiles/web）安装
 cd ~/.dsh/profiles/web
-npm install github:Rain-Shuoyu/dsh-client-deep-sneak
+npm install dsh-client-deep-sneak
 ```
 
 ```yaml
 # 2. 编辑该目录下的 cordis.patch.yml，追加：
 - insert:
-    - id: dsh-client-deep-sneak
+    - id: deep-sneak
       name: dsh-client-deep-sneak
 ```
 

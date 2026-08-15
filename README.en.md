@@ -14,6 +14,7 @@
   <img src="https://img.shields.io/badge/license-MIT-green" alt="license" />
   <img src="https://img.shields.io/badge/platform-DSH%20Web-blueviolet" alt="platform" />
   <img src="https://img.shields.io/badge/type-web%20client%20plugin-ff69b4" alt="type" />
+  <a href="https://awesome-dsh-plugin.com"><img src="https://awesome-dsh-plugin.com/badge.svg" alt="Awesome DSH Plugin" /></a>
 </p>
 
 ---
@@ -29,16 +30,27 @@
 
 ## 📦 Install
 
+### One-command install (recommended)
+
+```bash
+# In your DSH deployment profile (the dir containing cordis.yml)
+dsh plugin --profile web add dsh-client-deep-sneak
+```
+
+Or install [dsh-market](https://github.com/dsh-market/dsh-market) and search for **DeepSneak** in Settings → Plugin Marketplace.
+
+### Manual install
+
 ```bash
 # 1. In your DSH deployment profile (the dir containing cordis.yml)
 cd ~/.dsh/profiles/web
-npm install github:Rain-Shuoyu/dsh-client-deep-sneak
+npm install dsh-client-deep-sneak
 ```
 
 ```yaml
 # 2. Append to cordis.patch.yml:
 - insert:
-    - id: dsh-client-deep-sneak
+    - id: deep-sneak
       name: dsh-client-deep-sneak
 ```
 
