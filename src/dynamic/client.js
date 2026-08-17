@@ -4,8 +4,8 @@ return {
     const slots = ctx.get('slots')
     if (slots === undefined) return
 
-    styles.insert(`.bw-layer { --bw-panel: rgba(255,255,255,.72); --bw-card-bg: #ffffff; --bw-panel-bd: rgba(31,35,40,.1); --bw-panel-shadow: 0 24px 64px rgba(20,22,28,.16), 0 4px 16px rgba(20,22,28,.07); --bw-head-bd: rgba(31,35,40,.07); --bw-text: #18191c; --bw-text2: #57606a; --bw-text3: #8a919c; --bw-soft: rgba(31,35,40,.045); --bw-soft-h: rgba(31,35,40,.09); --bw-soft2: rgba(31,35,40,.06); --bw-bd: rgba(31,35,40,.14); --bw-bd-soft: rgba(31,35,40,.08); --bw-err: #cf222e; --bw-err-bg: rgba(207,34,46,.08); --bw-pink: #4d6bfe; --bw-pink2: #7da0ff; --bw-accent: #ffffff; --bw-mask: rgba(24,26,32,.5); --bw-glass-hi: rgba(255,255,255,.6); position: fixed; inset: 0; pointer-events: none; z-index: 9999; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'PingFang SC', 'Microsoft YaHei', sans-serif; }
-.bw-layer.bw-dark { --bw-panel: rgba(22,27,40,.6); --bw-card-bg: rgba(255,255,255,.05); --bw-panel-bd: rgba(255,255,255,.12); --bw-panel-shadow: 0 24px 64px rgba(0,0,0,.6), 0 4px 16px rgba(0,0,0,.3); --bw-head-bd: rgba(255,255,255,.07); --bw-text: #f5f6f7; --bw-text2: #c9d1d9; --bw-text3: #8b949e; --bw-soft: rgba(255,255,255,.07); --bw-soft-h: rgba(255,255,255,.13); --bw-soft2: rgba(255,255,255,.06); --bw-bd: rgba(255,255,255,.14); --bw-bd-soft: rgba(255,255,255,.09); --bw-err: #ff7b72; --bw-err-bg: rgba(248,81,73,.1); --bw-mask: rgba(18,20,26,.55); --bw-glass-hi: rgba(255,255,255,.08); }
+    styles.insert(`.bw-layer { --bw-panel: rgba(255,255,255,.72); --bw-card-bg: #ffffff; --bw-panel-bd: rgba(31,35,40,.1); --bw-panel-shadow: 0 24px 64px rgba(20,22,28,.16), 0 4px 16px rgba(20,22,28,.07); --bw-head-bd: rgba(31,35,40,.07); --bw-text: #18191c; --bw-text2: #57606a; --bw-text3: #8a919c; --bw-soft: rgba(31,35,40,.045); --bw-soft-h: rgba(31,35,40,.09); --bw-soft2: rgba(31,35,40,.06); --bw-bd: rgba(31,35,40,.14); --bw-bd-soft: rgba(31,35,40,.08); --bw-err: #cf222e; --bw-err-bg: rgba(207,34,46,.08); --bw-pink: #4d6bfe; --bw-pink2: #7da0ff; --bw-accent: #ffffff; --bw-mask: rgba(24,26,32,.5); --bw-glass-hi: rgba(255,255,255,.6); --bw-panel-solid: #ffffff; position: fixed; inset: 0; pointer-events: none; z-index: 9999; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'PingFang SC', 'Microsoft YaHei', sans-serif; }
+.bw-layer.bw-dark { --bw-panel: rgba(22,27,40,.6); --bw-card-bg: rgba(255,255,255,.05); --bw-panel-bd: rgba(255,255,255,.12); --bw-panel-shadow: 0 24px 64px rgba(0,0,0,.6), 0 4px 16px rgba(0,0,0,.3); --bw-head-bd: rgba(255,255,255,.07); --bw-text: #f5f6f7; --bw-text2: #c9d1d9; --bw-text3: #8b949e; --bw-soft: rgba(255,255,255,.07); --bw-soft-h: rgba(255,255,255,.13); --bw-soft2: rgba(255,255,255,.06); --bw-bd: rgba(255,255,255,.14); --bw-bd-soft: rgba(255,255,255,.09); --bw-err: #ff7b72; --bw-err-bg: rgba(248,81,73,.1); --bw-mask: rgba(18,20,26,.55); --bw-glass-hi: rgba(255,255,255,.08); --bw-panel-solid: #191c22; }
 .bw-toast { position: fixed; top: 18px; left: 50%; transform: translateX(-50%); pointer-events: auto; background: var(--bw-panel); color: var(--bw-text); border: 1px solid var(--bw-panel-bd); border-radius: 14px; padding: 10px 16px; font-size: 13px; box-shadow: var(--bw-panel-shadow), inset 0 1px 0 var(--bw-glass-hi); display: flex; align-items: center; gap: 12px; cursor: pointer; z-index: 10001; animation: bwPop .25s ease; backdrop-filter: blur(18px) saturate(180%); }
 .bw-toast-cta { color: #7aa2ff; font-weight: 600; }
 .bw-pill { position: fixed; right: 18px; bottom: 18px; pointer-events: auto; background: var(--bw-panel); color: var(--bw-text); border: 1px solid var(--bw-panel-bd); border-radius: 999px; padding: 10px 18px; font-size: 13px; display: flex; align-items: center; gap: 8px; cursor: pointer; box-shadow: var(--bw-panel-shadow), inset 0 1px 0 var(--bw-glass-hi); z-index: 10001; backdrop-filter: blur(22px) saturate(180%); font-weight: 600; }
@@ -96,10 +96,10 @@ return {
 .bw-mask .bw-btn:hover { background: rgba(255,255,255,.26); }
 .bw-mask .bw-btn-primary { background: linear-gradient(135deg, var(--bw-pink), var(--bw-pink2)); border-color: transparent; color: #ffffff; }
 .bw-row { display: flex; gap: 8px; }
-.bw-stats { position: absolute; inset: 0; background: var(--bw-panel); z-index: 4; padding: 16px; display: flex; flex-direction: column; gap: 12px; overflow-y: auto; backdrop-filter: blur(22px) saturate(180%); }
+.bw-stats { position: absolute; inset: 0; background: var(--bw-panel-solid); z-index: 4; padding: 16px; display: flex; flex-direction: column; gap: 12px; overflow-y: auto; }
 .bw-stats-title { font-size: 15px; font-weight: 700; }
 .bw-stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-.bw-stats-item { background: var(--bw-soft); border-radius: 12px; padding: 12px 10px; text-align: center; }
+.bw-stats-item { background: var(--bw-soft); border-radius: 12px; padding: 14px 10px 12px; text-align: center; }
 .bw-stats-num { font-size: 17px; font-weight: 700; color: var(--bw-pink); }
 .bw-stats-label { font-size: 11px; color: var(--bw-text3); margin-top: 2px; }
 .bw-stats-7d { display: flex; flex-direction: column; gap: 6px; }
@@ -108,6 +108,22 @@ return {
 .bw-stats-barwrap { flex: 1; background: var(--bw-soft); border-radius: 3px; height: 6px; overflow: hidden; }
 .bw-stats-bar { height: 6px; border-radius: 3px; background: linear-gradient(90deg, var(--bw-pink), var(--bw-pink2)); }
 .bw-stats-dayval { width: 62px; text-align: right; flex: none; }
+.bw-stats-ico { width: 34px; height: 34px; border-radius: 10px; background: linear-gradient(135deg, rgba(77,107,254,.14), rgba(125,160,255,.22)); display: inline-flex; align-items: center; justify-content: center; font-size: 16px; margin-bottom: 8px; }
+.bw-charts { display: grid; grid-template-columns: 3fr 2fr; gap: 10px; }
+.bw-chart-card { background: var(--bw-soft); border-radius: 12px; padding: 10px 10px 8px; display: flex; flex-direction: column; }
+.bw-chart-title { font-size: 12px; font-weight: 600; color: var(--bw-text2); margin-bottom: 8px; }
+.bw-chart-svg { width: 100%; height: 70px; display: block; }
+.bw-chart-x { display: flex; justify-content: space-between; margin-top: 2px; }
+.bw-chart-xlabel { font-size: 9px; color: var(--bw-text3); }
+.bw-pie-wrap { position: relative; width: 108px; height: 108px; margin: 0 auto; }
+.bw-pie { width: 100%; height: 100%; border-radius: 50%; }
+.bw-pie-hole { position: absolute; inset: 24px; background: var(--bw-panel-solid); border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.bw-pie-hole-num { font-size: 11px; font-weight: 700; color: var(--bw-text); }
+.bw-pie-hole-label { font-size: 9px; color: var(--bw-text3); }
+.bw-legend { display: flex; flex-direction: column; gap: 3px; margin-top: 8px; }
+.bw-legend-row { display: flex; align-items: center; gap: 6px; font-size: 10px; color: var(--bw-text2); }
+.bw-legend-dot { width: 9px; height: 9px; border-radius: 3px; flex: none; }
+.bw-legend-val { margin-left: auto; color: var(--bw-text3); }
 @keyframes bwPop { from { opacity: 0; transform: translateX(-50%) translateY(-8px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
 @keyframes bwBlink { 0%,100% { opacity: 1; } 50% { opacity: .45; } }
 @keyframes bwDmFade { from { opacity: 1; } to { opacity: 1; } }`)
@@ -228,6 +244,44 @@ return {
     const THEME_KEY = "deep-sneak.theme";
     const LEGACY_THEME_KEY = "dsh-bili-watch.theme";
 
+    // ---- 观看历史：localStorage 持久化（最新在前，上限 50 条）----
+    const HISTORY_KEY = "deep-sneak.history.v1";
+
+    function loadHistory() {
+      try {
+        const raw = localStorage.getItem(HISTORY_KEY);
+        if (raw) {
+          const d = JSON.parse(raw);
+          if (Array.isArray(d)) return d;
+        }
+      } catch {
+        /* localStorage unavailable */
+      }
+      return [];
+    }
+
+    function saveHistory(list) {
+      try {
+        localStorage.setItem(HISTORY_KEY, JSON.stringify(list));
+      } catch {
+        /* ignore */
+      }
+    }
+
+    function fmtAgo(ts) {
+      const d = Date.now() - Number(ts || 0);
+      if (!(d > 0)) return "";
+      const m = Math.floor(d / 60000);
+      if (m < 1) return "刚刚";
+      if (m < 60) return m + " 分钟前";
+      const h = Math.floor(m / 60);
+      if (h < 24) return h + " 小时前";
+      const day = Math.floor(h / 24);
+      if (day < 7) return day + " 天前";
+      const x = new Date(ts);
+      return x.getMonth() + 1 + "-" + x.getDate();
+    }
+
     function dayKey(d) {
       const x = d instanceof Date ? d : new Date(d);
       return (
@@ -283,7 +337,8 @@ return {
       const [freshIdx, setFreshIdx] = React.useState(1);
       const [reload, setReload] = React.useState(0);
       const [input, setInput] = React.useState("");
-      const [tab, setTab] = React.useState("home"); // 'home' | 'search'
+      const [tab, setTab] = React.useState("home"); // 'home' | 'search' | 'history'
+      const [history, setHistory] = React.useState(loadHistory);
       const [searchInput, setSearchInput] = React.useState("");
       const [searchKw, setSearchKw] = React.useState("");
       const [searchResults, setSearchResults] = React.useState(null); // null=加载中
@@ -313,6 +368,7 @@ return {
       const [hostAtt, setHostAtt] = React.useState(null);
 
       const videoRef = React.useRef(null);
+      const startFromRef = React.useRef(0);
       const prevRunning = React.useRef(false);
       const firedKey = React.useRef(null);
       const statsRef = React.useRef(loadStats());
@@ -375,14 +431,39 @@ return {
 
       // 停止计时并结算（pause/ended/卸载）
       const stopWatch = React.useCallback(() => {
+        saveProgressRef.current();
         if (playingSinceRef.current == null) return;
         bankWatch();
         playingSinceRef.current = null;
       }, [bankWatch]);
 
+      // 保存当前播放进度到观看历史（30s 定时 + 暂停/切换/卸载时调用）
+      const saveProgressRef = React.useRef(() => {});
+      const saveProgress = React.useCallback(() => {
+        const v = videoRef.current;
+        if (!v || !video || !video.bvid || !(v.currentTime > 0)) return;
+        const p = Math.floor(v.currentTime);
+        setHistory((prev) => {
+          let changed = false;
+          const next = prev.map((h) => {
+            if (h.bvid === video.bvid && p !== h.progress) {
+              changed = true;
+              return { ...h, progress: p, watchedAt: Date.now() };
+            }
+            return h;
+          });
+          if (changed) saveHistory(next);
+          return next;
+        });
+      }, [video]);
+      saveProgressRef.current = saveProgress;
+
       // 定时落盘 + 页面关闭落盘 + 卸载结算
       React.useEffect(() => {
-        const flush = () => bankWatch();
+        const flush = () => {
+          bankWatch();
+          saveProgressRef.current();
+        };
         const id = ctx.interval(flush, 30000);
         window.addEventListener('beforeunload', flush);
         return () => {
@@ -442,8 +523,11 @@ return {
         setCommentsLoading(false);
       }, []);
 
-      const loadVideo = React.useCallback(async (bvid, page) => {
+      const loadVideo = React.useCallback(async (bvid, page, startSec) => {
         try {
+          // 切换前保存旧视频进度
+          saveProgressRef.current();
+          startFromRef.current = startSec || 0;
           const viewRes = await biliApi("https://api.bilibili.com/x/web-interface/view?bvid=" + bvid);
           if (!viewRes || viewRes.code !== 0 || !viewRes.data) throw new Error("视频信息获取失败");
           const d = viewRes.data;
@@ -461,6 +545,21 @@ return {
             pic: https(d.pic),
             up: d.owner && d.owner.name,
             src: "/dsh-bili/media?u=" + encodeURIComponent(du.url),
+          });
+          // 写入观看历史（去重置顶，上限 50）
+          setHistory((prev) => {
+            const entry = {
+              bvid,
+              title: d.title,
+              pic: https(d.pic),
+              up: d.owner && d.owner.name,
+              duration: fmtDur(d.duration),
+              watchedAt: Date.now(),
+              progress: 0,
+            };
+            const next = [entry, ...prev.filter((h) => h.bvid !== bvid)].slice(0, 50);
+            saveHistory(next);
+            return next;
           });
           setView("player");
           setAttention(null);
@@ -664,6 +763,17 @@ return {
               controls: true,
               autoPlay: true,
               playsInline: true,
+              onLoadedMetadata: () => {
+                const v = videoRef.current;
+                const s = startFromRef.current;
+                if (v && s > 1 && !isNaN(v.duration) && v.duration > 0) {
+                  try {
+                    v.currentTime = Math.min(s, v.duration - 0.5);
+                  } catch {
+                    /* ignore */
+                  }
+                }
+              },
               onPlaying: handlePlaying,
               onPause: stopWatch,
               onEnded: stopWatch,
@@ -692,18 +802,19 @@ return {
           relItems.length ? el("div", { className: "bw-related" }, relItems) : null,
         );
       } else {
-        // ---- 首页推荐 / 搜索 feed view ----
+        // ---- 首页推荐 / 搜索 / 观看历史 feed view ----
         const renderCard = (it) =>
-          el("button", { key: it.bvid, className: "bw-card", onClick: () => loadVideo(it.bvid, 1) },
+          el("button", { key: it.bvid, className: "bw-card", onClick: () => loadVideo(it.bvid, 1, it.progress || 0) },
             el("div", { className: "bw-card-picwrap" },
               el("img", { className: "bw-card-pic", src: it.pic, loading: "lazy", referrerPolicy: "no-referrer" }),
               el("div", { className: "bw-card-covermask" }),
               el("span", { className: "bw-card-play" }, "▶"),
-              it.duration ? el("span", { className: "bw-card-dur" }, it.duration) : null,
+              el("span", { className: "bw-card-dur" }, it.progress ? fmtDur(it.progress) : (it.duration || "")),
             ),
             el("div", { className: "bw-card-title" }, it.title),
             el("div", { className: "bw-card-meta" },
               el("span", { className: "bw-up" }, it.up || "未知UP"),
+              it.watchedAt ? el("span", { className: "bw-stat" }, "🕘", fmtAgo(it.watchedAt)) : null,
               it.view ? el("span", { className: "bw-stat" }, "▶", fmtCount(it.view)) : null,
               it.danmaku ? el("span", { className: "bw-stat" }, "💬", fmtCount(it.danmaku)) : null,
             ),
@@ -719,6 +830,12 @@ return {
             grid = el("div", { className: "bw-error" }, "没有找到「" + searchKw + "」相关视频");
           } else {
             grid = el("div", { className: "bw-grid" }, searchResults.map(renderCard));
+          }
+        } else if (tab === "history") {
+          if (!history.length) {
+            grid = el("div", { className: "bw-loading" }, "还没有观看记录，看完一个视频就会出现在这里");
+          } else {
+            grid = el("div", { className: "bw-grid" }, history.map(renderCard));
           }
         } else if (feedError) {
           grid = el("div", { className: "bw-error" }, feedError,
@@ -756,12 +873,15 @@ return {
           el("div", { className: "bw-tabrow" },
             el("button", { className: "bw-tab" + (tab === "home" ? " bw-tab-active" : ""), onClick: () => setTab("home") }, "🏠 首页推荐"),
             el("button", { className: "bw-tab" + (tab === "search" ? " bw-tab-active" : ""), onClick: () => setTab("search") }, "🔍 " + (searchKw || "搜索")),
+            el("button", { className: "bw-tab" + (tab === "history" ? " bw-tab-active" : ""), onClick: () => setTab("history") }, "🕘 观看历史"),
             tab === "search"
               ? el("button", { className: "bw-btn bw-refresh", onClick: submitSearch, disabled: searching }, "重搜")
-              : el("span", { className: "bw-spacer" },
-                  el("button", { className: "bw-btn bw-refresh", onClick: () => setFreshIdx((i) => i + 1) }, "换一批"),
-                  el("button", { className: "bw-btn bw-refresh", onClick: () => setReload((r) => r + 1) }, "刷新"),
-                ),
+              : tab === "history"
+                ? el("button", { className: "bw-btn bw-refresh", onClick: () => { setHistory([]); saveHistory([]); } }, "清空历史")
+                : el("span", { className: "bw-spacer" },
+                    el("button", { className: "bw-btn bw-refresh", onClick: () => setFreshIdx((i) => i + 1) }, "换一批"),
+                    el("button", { className: "bw-btn bw-refresh", onClick: () => setReload((r) => r + 1) }, "刷新"),
+                  ),
           ),
           grid,
           pager,
@@ -817,23 +937,93 @@ return {
           last7.push({ label: k.slice(5), ms: (daily[k] || {}).ms || 0 });
         }
         const max7 = Math.max(1, ...last7.map((x) => x.ms));
+        // 折线图坐标（近 7 天）
+        const PIE_COLORS = ["#4d6bfe", "#5f7dff", "#728eff", "#8aa2ff", "#a2b6ff", "#bccbff", "#d9e2ff"];
+        const cw = 200, ch = 70, padX = 6, padY = 8;
+        const stepX = (cw - padX * 2) / Math.max(1, last7.length - 1);
+        const pts = last7.map((x, i) => {
+          const px = padX + i * stepX;
+          const py = ch - padY - (x.ms / max7) * (ch - padY * 2);
+          return [px, py];
+        });
+        const linePts = pts.map(([x, y]) => x.toFixed(1) + "," + y.toFixed(1)).join(" ");
+        const areaD =
+          "M" + pts[0][0].toFixed(1) + "," + (ch - padY) + " " +
+          pts.map(([x, y]) => "L" + x.toFixed(1) + "," + y.toFixed(1)).join(" ") +
+          " L" + pts[pts.length - 1][0].toFixed(1) + "," + (ch - padY) + " Z";
+        // 饼图（本周各天占比）
+        const pieTotal = Math.max(1, last7.reduce((a, x) => a + x.ms, 0));
+        let pieAcc = 0;
+        const pieStops = last7
+          .map((x, i) => {
+            const deg = (x.ms / pieTotal) * 360;
+            const s = pieAcc;
+            pieAcc += deg;
+            return PIE_COLORS[i % PIE_COLORS.length] + " " + s.toFixed(1) + "deg " + pieAcc.toFixed(1) + "deg";
+          })
+          .join(", ");
         statsOverlay = el("div", { className: "bw-stats" },
           el("div", { className: "bw-stats-title" }, "📊 摸鱼统计"),
           el("div", { className: "bw-stats-grid" },
-            el("div", { className: "bw-stats-item" }, el("div", { className: "bw-stats-num" }, fmtMs(todayMs)), el("div", { className: "bw-stats-label" }, "今日摸鱼")),
-            el("div", { className: "bw-stats-item" }, el("div", { className: "bw-stats-num" }, String(todayVideos)), el("div", { className: "bw-stats-label" }, "今日视频")),
-            el("div", { className: "bw-stats-item" }, el("div", { className: "bw-stats-num" }, fmtMs(weekMs)), el("div", { className: "bw-stats-label" }, "本周摸鱼")),
-            el("div", { className: "bw-stats-item" }, el("div", { className: "bw-stats-num" }, fmtMs(totalMs)), el("div", { className: "bw-stats-label" }, "累计摸鱼")),
+            el("div", { className: "bw-stats-item" },
+              el("div", { className: "bw-stats-ico" }, "⏱️"),
+              el("div", { className: "bw-stats-num" }, fmtMs(todayMs)),
+              el("div", { className: "bw-stats-label" }, "今日摸鱼"),
+            ),
+            el("div", { className: "bw-stats-item" },
+              el("div", { className: "bw-stats-ico" }, "🎬"),
+              el("div", { className: "bw-stats-num" }, String(todayVideos)),
+              el("div", { className: "bw-stats-label" }, "今日视频"),
+            ),
+            el("div", { className: "bw-stats-item" },
+              el("div", { className: "bw-stats-ico" }, "📅"),
+              el("div", { className: "bw-stats-num" }, fmtMs(weekMs)),
+              el("div", { className: "bw-stats-label" }, "本周摸鱼"),
+            ),
+            el("div", { className: "bw-stats-item" },
+              el("div", { className: "bw-stats-ico" }, "🏆"),
+              el("div", { className: "bw-stats-num" }, fmtMs(totalMs)),
+              el("div", { className: "bw-stats-label" }, "累计摸鱼"),
+            ),
           ),
-          el("div", { className: "bw-stats-title" }, "近 7 天"),
-          el("div", { className: "bw-stats-7d" },
-            last7.map((x) =>
-              el("div", { key: x.label, className: "bw-stats-day" },
-                el("span", { className: "bw-stats-daylabel" }, x.label),
-                el("span", { className: "bw-stats-barwrap" },
-                  el("span", { className: "bw-stats-bar", style: { display: "block", width: Math.max(2, (x.ms / max7) * 100) + "%" } }),
+          el("div", { className: "bw-stats-title" }, "数据图表"),
+          el("div", { className: "bw-charts" },
+            el("div", { className: "bw-chart-card" },
+              el("div", { className: "bw-chart-title" }, "📈 近 7 天摸鱼趋势"),
+              el("svg", { className: "bw-chart-svg", viewBox: "0 0 " + cw + " " + ch, preserveAspectRatio: "none" },
+                el("defs", null,
+                  el("linearGradient", { id: "bwAreaG", x1: "0", y1: "0", x2: "0", y2: "1" },
+                    el("stop", { offset: "0%", stopColor: "#4d6bfe", stopOpacity: "0.32" }),
+                    el("stop", { offset: "100%", stopColor: "#4d6bfe", stopOpacity: "0" }),
+                  ),
                 ),
-                el("span", { className: "bw-stats-dayval" }, x.ms >= 60000 ? Math.round(x.ms / 60000) + " 分" : "—"),
+                el("path", { d: areaD, fill: "url(#bwAreaG)" }),
+                el("polyline", { points: linePts, fill: "none", stroke: "#4d6bfe", strokeWidth: 2, strokeLinejoin: "round", strokeLinecap: "round" }),
+                pts.map(([x, y], i) =>
+                  el("circle", { key: i, cx: x, cy: y, r: 2.6, fill: "#4d6bfe", style: { stroke: "var(--bw-panel-solid)", strokeWidth: 1.2 } }),
+                ),
+              ),
+              el("div", { className: "bw-chart-x" },
+                last7.map((x) => el("span", { key: x.label, className: "bw-chart-xlabel" }, x.label.slice(3))),
+              ),
+            ),
+            el("div", { className: "bw-chart-card" },
+              el("div", { className: "bw-chart-title" }, "🥧 本周时长占比"),
+              el("div", { className: "bw-pie-wrap" },
+                el("div", { className: "bw-pie", style: { background: "conic-gradient(" + pieStops + ")" } }),
+                el("div", { className: "bw-pie-hole" },
+                  el("div", { className: "bw-pie-hole-num" }, fmtMs(pieTotal)),
+                  el("div", { className: "bw-pie-hole-label" }, "7 天合计"),
+                ),
+              ),
+              el("div", { className: "bw-legend" },
+                last7.map((x, i) =>
+                  el("div", { key: x.label, className: "bw-legend-row" },
+                    el("span", { className: "bw-legend-dot", style: { background: PIE_COLORS[i % PIE_COLORS.length] } }),
+                    el("span", null, x.label.slice(3)),
+                    el("span", { className: "bw-legend-val" }, x.ms >= 60000 ? Math.round(x.ms / 60000) + " 分" : "—"),
+                  ),
+                ),
               ),
             ),
           ),
