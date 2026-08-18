@@ -246,14 +246,111 @@ return {
 
     // ---- 观看历史：localStorage 持久化（最新在前，上限 50 条）----
     const HISTORY_KEY = "deep-sneak.history.v1";
+    const HISTORY_MAX = 50;
+    const HISTORY_BVID_RE = /^BV[0-9A-Za-z]{8,14}$/;
+
+    function normalizeHistoryEntry(entry) {
+      if (!entry || typeof entry !== "object" || typeof entry.bvid !== "string" || !HISTORY_BVID_RE.test(entry.bvid)) {
+        return null;
+      }
+
+      return {
+        bvid: entry.bvid,
+        title: typeof entry.title === "string" ? entry.title : "",
+        pic: typeof entry.pic === "string" ? entry.pic : "",
+        up: typeof entry.up === "string" ? entry.up : "",
+        duration: entry.duration == null ? null : String(entry.duration),
+        watchedAt: Number.isFinite(entry.watchedAt) && entry.watchedAt >= 0 ? entry.watchedAt : 0,
+        progress: Number.isFinite(entry.progress) && entry.progress > 0 ? Math.floor(entry.progress) : 0,
+      };
+    }
+
+    function sanitizeHistory(value) {
+      if (!Array.isArray(value)) return [];
+      return value
+        .map(normalizeHistoryEntry)
+        .filter(Boolean)
+        .sort((a, b) => b.watchedAt - a.watchedAt)
+        .slice(0, HISTORY_MAX);
+    }
+
+    function normalizeHistoryTimestamp(now) {
+      try {
+        const timestamp = Number(now);
+        return Number.isFinite(timestamp) && timestamp >= 0 ? timestamp : 0;
+      } catch {
+        return 0;
+      }
+    }
+
+    function upsertHistory(list, entry, now) {
+      const history = sanitizeHistory(list);
+      const normalized = normalizeHistoryEntry(entry);
+      if (!normalized) return history;
+
+      const existing = history.find((item) => item.bvid === normalized.bvid);
+      const nextEntry = {
+        ...normalized,
+        progress: existing ? existing.progress : normalized.progress,
+        watchedAt: normalizeHistoryTimestamp(now),
+      };
+      return [nextEntry, ...history.filter((item) => item.bvid !== normalized.bvid)].slice(0, HISTORY_MAX);
+    }
+
+    function normalizeHistoryProgress(progress) {
+      return Number.isFinite(progress) ? Math.max(0, Math.floor(progress)) : 0;
+    }
+
+    function updateHistoryProgress(list, bvid, progress, now) {
+      const history = sanitizeHistory(list);
+      const index = history.findIndex((item) => item.bvid === bvid);
+      if (index < 0) return history;
+
+      const nextEntry = {
+        ...history[index],
+        progress: normalizeHistoryProgress(progress),
+        watchedAt: normalizeHistoryTimestamp(now),
+      };
+      return [nextEntry, ...history.filter((item) => item.bvid !== bvid)].slice(0, HISTORY_MAX);
+    }
+
+    function completeHistory(list, bvid, now) {
+      const history = sanitizeHistory(list);
+      const index = history.findIndex((item) => item.bvid === bvid);
+      if (index < 0) return history;
+
+      const nextEntry = {
+        ...history[index],
+        progress: 0,
+        watchedAt: normalizeHistoryTimestamp(now),
+      };
+      return [nextEntry, ...history.filter((item) => item.bvid !== bvid)].slice(0, HISTORY_MAX);
+    }
+
+    function resumeSeconds(entry, duration) {
+      const progress = Number.isFinite(entry && entry.progress) && entry.progress > 0
+        ? Math.floor(entry.progress)
+        : 0;
+      if (!Number.isFinite(duration) || duration <= 0) return 0;
+      if (progress <= 0 || progress >= duration - 1) return 0;
+      return Math.min(progress, Math.floor(duration - 1));
+    }
+
+    function shouldSaveHistoryProgress(video, media, completedBvid) {
+      return Boolean(
+        media &&
+        video &&
+        video.bvid &&
+        !media.ended &&
+        completedBvid !== video.bvid &&
+        Number(media.currentTime) > 0,
+      );
+    }
 
     function loadHistory() {
       try {
         const raw = localStorage.getItem(HISTORY_KEY);
-        if (raw) {
-          const d = JSON.parse(raw);
-          if (Array.isArray(d)) return d;
-        }
+        return sanitizeHistory(JSON.parse(raw));
       } catch {
         /* localStorage unavailable */
       }
@@ -369,6 +466,8 @@ return {
 
       const videoRef = React.useRef(null);
       const startFromRef = React.useRef(0);
+      const loadSeqRef = React.useRef(0);
+      const completedBvidRef = React.useRef(null);
       const prevRunning = React.useRef(false);
       const firedKey = React.useRef(null);
       const statsRef = React.useRef(loadStats());
@@ -441,22 +540,25 @@ return {
       const saveProgressRef = React.useRef(() => {});
       const saveProgress = React.useCallback(() => {
         const v = videoRef.current;
-        if (!v || !video || !video.bvid || !(v.currentTime > 0)) return;
-        const p = Math.floor(v.currentTime);
+        if (!shouldSaveHistoryProgress(video, v, completedBvidRef.current)) return;
         setHistory((prev) => {
-          let changed = false;
-          const next = prev.map((h) => {
-            if (h.bvid === video.bvid && p !== h.progress) {
-              changed = true;
-              return { ...h, progress: p, watchedAt: Date.now() };
-            }
-            return h;
-          });
-          if (changed) saveHistory(next);
+          const next = updateHistoryProgress(prev, video.bvid, v.currentTime, Date.now());
+          saveHistory(next);
           return next;
         });
       }, [video]);
       saveProgressRef.current = saveProgress;
+
+      const finishHistory = React.useCallback(() => {
+        if (!video || !video.bvid) return;
+        completedBvidRef.current = video.bvid;
+        setHistory((prev) => {
+          const next = completeHistory(prev, video.bvid, Date.now());
+          saveHistory(next);
+          completedBvidRef.current = video.bvid;
+          return next;
+        });
+      }, [video]);
 
       // 定时落盘 + 页面关闭落盘 + 卸载结算
       React.useEffect(() => {
@@ -524,19 +626,25 @@ return {
       }, []);
 
       const loadVideo = React.useCallback(async (bvid, page, startSec) => {
+        const seq = ++loadSeqRef.current;
+        const resume = Number(startSec) || 0;
+        saveProgressRef.current();
         try {
-          // 切换前保存旧视频进度
-          saveProgressRef.current();
-          startFromRef.current = startSec || 0;
           const viewRes = await biliApi("https://api.bilibili.com/x/web-interface/view?bvid=" + bvid);
+          if (seq !== loadSeqRef.current) return;
           if (!viewRes || viewRes.code !== 0 || !viewRes.data) throw new Error("视频信息获取失败");
           const d = viewRes.data;
           const cid = page && d.pages && d.pages.length ? (d.pages[page - 1] || d.pages[0]).cid : d.cid;
           const pl = await biliApi(
             "https://api.bilibili.com/x/player/playurl?bvid=" + bvid + "&cid=" + cid + "&qn=64&fnval=0",
           );
+          if (seq !== loadSeqRef.current) return;
           const du = pl && pl.code === 0 && pl.data && pl.data.durl && pl.data.durl[0];
           if (!du || !du.url) throw new Error("播放地址获取失败");
+          if (seq !== loadSeqRef.current) return;
+          startFromRef.current = resume;
+          stopWatch();
+          completedBvidRef.current = null;
           setVideo({
             bvid,
             aid: d.aid,
@@ -554,10 +662,8 @@ return {
               pic: https(d.pic),
               up: d.owner && d.owner.name,
               duration: fmtDur(d.duration),
-              watchedAt: Date.now(),
-              progress: 0,
             };
-            const next = [entry, ...prev.filter((h) => h.bvid !== bvid)].slice(0, 50);
+            const next = upsertHistory(prev, entry, Date.now());
             saveHistory(next);
             return next;
           });
@@ -568,11 +674,13 @@ return {
           setCommentPn(0);
           if (commentsOpenRef.current) loadComments(d.aid, 1);
           const rel = await biliApi("https://api.bilibili.com/x/web-interface/archive/related?bvid=" + bvid);
+          if (seq !== loadSeqRef.current) return;
           if (rel && rel.code === 0 && Array.isArray(rel.data)) setRelated(rel.data.map(normalizeItem));
         } catch (e) {
+          if (seq !== loadSeqRef.current) return;
           setToast({ reason: "error", text: String((e && e.message) || e) });
         }
-      }, [loadDanmaku, loadComments]);
+      }, [loadDanmaku, loadComments, stopWatch]);
 
       const openVideoByInput = () => {
         const p = parseBili(input);
@@ -765,10 +873,11 @@ return {
               playsInline: true,
               onLoadedMetadata: () => {
                 const v = videoRef.current;
-                const s = startFromRef.current;
-                if (v && s > 1 && !isNaN(v.duration) && v.duration > 0) {
+                if (!v) return;
+                const s = resumeSeconds({ progress: startFromRef.current }, v.duration);
+                if (s > 0) {
                   try {
-                    v.currentTime = Math.min(s, v.duration - 0.5);
+                    v.currentTime = s;
                   } catch {
                     /* ignore */
                   }
@@ -776,14 +885,17 @@ return {
               },
               onPlaying: handlePlaying,
               onPause: stopWatch,
-              onEnded: stopWatch,
+              onEnded: () => {
+                stopWatch();
+                finishHistory();
+              },
             }),
             el("div", { ref: dmLayerRef, className: "bw-dm-layer" }),
           ),
           el("div", { className: "bw-vtitle" }, video.title),
           el("div", { className: "bw-vmeta" }, (video.up || "") + " · " + video.bvid),
           el("div", { className: "bw-vtool" },
-            el("button", { className: "bw-btn", onClick: () => setView("feed") }, "← 首页"),
+            el("button", { className: "bw-btn", onClick: () => { stopWatch(); setView("feed"); } }, "← 首页"),
             el("button", { className: "bw-btn" + (dmOn ? " bw-tab-active" : ""), onClick: toggleDm }, "💬 弹幕"),
             el("button", { className: "bw-btn" + (commentsOpen ? " bw-tab-active" : ""), onClick: toggleComments }, "📝 评论"),
             el("span", { className: "bw-vmeta" }, "相关推荐"),
