@@ -218,3 +218,27 @@ test("completeHistory resets progress, moves the entry to the front, and updates
   assert.deepEqual(result[1], historySnapshot[0]);
   assert.deepEqual(history, historySnapshot);
 });
+
+test("shouldSaveHistoryProgress blocks ended playback and completed videos from later flushes", async () => {
+  const { shouldSaveHistoryProgress, completeHistory, updateHistoryProgress } = await loadHistoryApi();
+  const video = { bvid: bvidFor(1) };
+  const playing = { ended: false, currentTime: 12.4 };
+
+  assert.equal(shouldSaveHistoryProgress(video, playing, null), true);
+  assert.equal(shouldSaveHistoryProgress(video, playing, undefined), true);
+  assert.equal(shouldSaveHistoryProgress(video, { ended: true, currentTime: 59.9 }, null), false);
+  assert.equal(shouldSaveHistoryProgress(video, playing, video.bvid), false);
+  assert.equal(shouldSaveHistoryProgress(video, { ended: false, currentTime: 0 }, null), false);
+  assert.equal(shouldSaveHistoryProgress(null, playing, null), false);
+  assert.equal(shouldSaveHistoryProgress(video, null, null), false);
+  assert.equal(shouldSaveHistoryProgress({ bvid: "" }, playing, null), false);
+
+  const completed = completeHistory([makeEntry(1, 18)], bvidFor(1), 200);
+  const media = { ended: true, currentTime: 59.9 };
+  let next = completed;
+  if (shouldSaveHistoryProgress(video, media, video.bvid)) {
+    next = updateHistoryProgress(completed, video.bvid, media.currentTime, 201);
+  }
+  assert.equal(next[0].progress, 0);
+  assert.equal(next[0].watchedAt, 200);
+});
