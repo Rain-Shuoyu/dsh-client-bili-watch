@@ -26,7 +26,7 @@
 | 🏠 **Home feed**<br/>Real Bilibili recommendations, no login | ▶️ **Native player**<br/>Seek / speed control | ⏸️ **Exact resume**<br/>Continue from the exact position |
 | 💬 **Danmaku**<br/>Bullet comments synced to playback | 📝 **Comments**<br/>Browse comments under the player | 🔗 **Related videos**<br/>Swipe to switch without stopping |
 | ☀️/🌙 **Light & dark themes**<br/>One-click switch | 📊 **Slack stats**<br/>Today / week / total watch time | 🔔 **Smart alerts**<br/>approval / question / done / blocked |
-| 🟢 **Status badge**<br/>working / idle / needs you | 🔎 **Video search**<br/>Search by keyword, paginated | 🎯 **Zero config**<br/>Install and go |
+| 🟢 **Status badge**<br/>working / idle / needs you | 🔎 **Video search**<br/>Search by keyword, paginated | 🕘 **Watch history**<br/>Local records, resume unfinished videos |
 
 ## 📦 Install
 
@@ -64,16 +64,18 @@ Refresh the page — the DeepSneak mini-window appears bottom-right.
 ## 🚀 Quick start
 
 1. Click a card in the home feed → native player plays with danmaku
-2. Let the agent work while you watch
-3. When the agent needs you: video auto-pauses + a mask reminds you
-4. "Continue watching" resumes **from the exact position**
-5. Toggle ☀️/🌙 theme, check 📊 stats anytime
+2. Search Bilibili from the top box (or the 🔍 Search tab); results are paginated
+3. Let the agent work while you watch
+4. When the agent needs you: video auto-pauses + a mask reminds you
+5. "Continue watching" resumes **from the exact position**
+6. Toggle ☀️/🌙 theme, check 📊 stats anytime
+7. Open **🕘 Watch history** for the last 50 videos — unfinished ones resume, completed ones start from the beginning
 
 ## ❓ FAQ
 
 **Why only 720p?** Bilibili's quality limit for unauthenticated APIs; use the Bilibili web site for HD.
 **Why not Douyin?** douyin.com sends `X-Frame-Options: DENY` — embedding is impossible; its web APIs require signed auth.
-**Where is my data?** Everything stays in your browser (localStorage). No data is uploaded.
+**Where is my data?** Everything stays in your browser (localStorage): theme, danmaku/comments toggles, slack stats, and watch history. Nothing is uploaded.
 
 ## 🗺 Roadmap
 
@@ -82,9 +84,9 @@ Refresh the page — the DeepSneak mini-window appears bottom-right.
 - [x] Danmaku / comments
 - [x] Light & dark themes
 - [x] Slack stats
+- [x] Watch history & continue watching (local-only, 50 items)
 - [ ] Slack-time goal reminders
 - [ ] Danmaku density / size / speed settings
-- [ ] Watch history & "continue watching"
 
 ## 📄 License
 
